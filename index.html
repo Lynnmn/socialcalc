@@ -41,13 +41,13 @@
     </div-->
 
     <div class="btn-group btn-group-sm">
-        <img class="icon-btn" src="./images/save.png" title="保存至服务器" data-toggle="modal" data-target="#save-to-server">
+        <img class="icon-btn" src="./images/save.png" title="保存至服务器" data-toggle="modal" data-target="#modelSaveToServer" id="imgSave">
         <label class="input-file">
             <input type="file" name="inputFile" id="inputFile" value="" multiple="multiple"/>
             <img class="icon-btn" src="./images/input_file.png" title="选择文件" >
         </label>
-        <img class="icon-btn" src="./images/import.png" title="导入远程文档" data-toggle="modal" data-target="#myModal">
-        <img class="icon-btn" src="./images/share.png" title="分享链接" data-toggle="modal" data-target="#buttonVisitLink" id="show-share-link" >
+        <img class="icon-btn" src="./images/import.png" title="导入远程文档" data-toggle="modal" data-target="#modelLoad" id="imgLoad">
+        <img class="icon-btn" src="./images/share.png" title="分享链接" data-toggle="modal" data-target="#modelShareLink" id="show-share-link" >
 
         <div class="action-btns"></div>
         <a href="" download="a.txt" id="aSave">
@@ -55,7 +55,7 @@
         </a>
     </div>
 
-    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal fade" id="modelLoad" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -80,7 +80,7 @@
         </div><!-- /.modal -->
     </div>
 
-    <div class="modal fade" id="buttonVisitLink" tabindex="-1" role="dialog" aria-labelledby="myModalLabel1" aria-hidden="true">
+    <div class="modal fade" id="modelShareLink" tabindex="-1" role="dialog" aria-labelledby="myModalLabel1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -99,7 +99,7 @@
         </div><!-- /.modal -->
     </div>
 
-    <div class="modal fade" id="save-to-server" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2" aria-hidden="true">
+    <div class="modal fade" id="modelSaveToServer" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -181,7 +181,7 @@
     });
     function loadRemoteData (sheet, info) {
         if (sheet.remote && sheet.remote.length > 0) {
-            // var ref = "biz=personalize&table=训练计划创建情况&minDate=20181030&maxDate=20181031";
+            // var ref = "biz=personalize&table=训练计划创建情况&dateFrom=20181030&dateTo=20181031";
             var url = "/api/stat?" + info.ref;
             $.get(url, function (jsonstr, status) {
                 console.log(jsonstr);
@@ -194,6 +194,16 @@
             });
         }
     }
+    $("#imgLoad").click(function () {
+        var obj = document.getElementById("modelLoad");;
+        SocialCalc.Keyboard.passThru = obj;
+        obj.focus();
+    });
+    $("#imgSave").click(function () {
+        var obj = document.getElementById("modelSaveToServer");;
+        SocialCalc.Keyboard.passThru = obj;
+        obj.focus();
+    });
     $("#buttonLoad").click(function() {
         var ref = $("#inputRef").val();
         if (!workbook.editor.range.hasrange) {

@@ -114,4 +114,5 @@ SocialCalc.Workbook = function() {
             }
         }
     }
+
 }
