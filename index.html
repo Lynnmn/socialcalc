@@ -19,6 +19,7 @@
     <script type="text/javascript" src="js/socialcalcactionbtns.js"></script>
     <link rel="stylesheet" type="text/css" href="css/socialcalc.css">
     <link rel="stylesheet" type="text/css" href="css/index.css">
+    <link rel="stylesheet" type="text/css" href="css/reset.css">
 </head>
 <body>
 
@@ -144,6 +145,8 @@
     </div -->
 </div>
 <script>
+    $(".tab-content").css({ "height": (document.body.scrollHeight - 198) + 'px' })
+
     var workbook = new SocialCalc.Workbook();
     workbook.addNewSheet("sheet1");
     workbook.selectSheet("sheet1", "sheet", "formula");
