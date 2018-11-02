@@ -1,24 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Bootstrap 实例</title>
+    <title>训练计划数据报表</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.1.0/css/bootstrap.min.css">
     <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdn.staticfile.org/popper.js/1.12.5/umd/popper.min.js"></script>
     <script src="https://cdn.staticfile.org/twitter-bootstrap/4.1.0/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="socialcalcconstants.js"></script>
-    <script type="text/javascript" src="socialcalc-3.js"></script>
-    <script type="text/javascript" src="socialcalctableeditor.js"></script>
-    <script type="text/javascript" src="formatnumber2.js"></script>
-    <script type="text/javascript" src="formula1.js"></script>
-    <script type="text/javascript" src="socialcalcpopup.js"></script>
-    <script type="text/javascript" src="socialcalcspreadsheetcontrol.js"></script>
-    <script type="text/javascript" src="socialcalcworkbook.js"></script>
-    <script type="text/javascript" src="socialcalcactionbtns.js"></script>
-    <link rel="stylesheet" type="text/css" href="socialcalc.css">
-    <link rel="stylesheet" type="text/css" href="index.css">
+    <script type="text/javascript" src="js/socialcalcconstants.js"></script>
+    <script type="text/javascript" src="js/socialcalc-3.js"></script>
+    <script type="text/javascript" src="js/socialcalctableeditor.js"></script>
+    <script type="text/javascript" src="js/formatnumber2.js"></script>
+    <script type="text/javascript" src="js/formula1.js"></script>
+    <script type="text/javascript" src="js/socialcalcpopup.js"></script>
+    <script type="text/javascript" src="js/socialcalcworkbook.js"></script>
+    <script type="text/javascript" src="js/socialcalcactionbtns.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/socialcalc.css">
+    <link rel="stylesheet" type="text/css" href="css/index.css">
 </head>
 <body>
 
@@ -139,49 +138,94 @@
         $('#aSave').attr('href',fileStr);
     });
     $("#inputFile").change(function (e) {
-        for (var i = 0;i < this.files.length;i++) {
+        for (var i = 0; i < this.files.length; i++) {
             var file = this.files[i];
             console.log(file);
             var fr = new FileReader();
             fr.readAsText(file);
             fr.onload = function () {
                 console.log(this.result);
-                var json = JSON.parse(this.result);
-                for (var name in json) {
-                    var sheetInfo = workbook.sheetInfoMap[name];
-                    if (sheetInfo) {
-                        sheetInfo.sheet.ParseSheetSave(json[name]);
-                    } else {
-                        workbook.addNewSheet(name, json[name]);
-                    }
-                }
-                workbook.refresh();
-
+                loadFileData(this.result);
             }
         }
     });
+    function loadRemoteData (sheet, info) {
+        if (sheet.remote && sheet.remote.length > 0) {
+            // var ref = "biz=personalize&table=训练计划创建情况&minDate=20181030&maxDate=20181031";
+            var url = "/api/stat?" + info.ref;
+            $.get(url, function (jsonstr, status) {
+                console.log(jsonstr);
+                var data = JSON.parse(jsonstr);
+                if (data.code != 0) {
+                    alert("failed to load " + url);
+                    return;
+                }
+                workbook.updateRemoteData(sheet, info, data.result);
+            });
+        }
+    }
     $("#buttonLoad").click(function() {
-        var url = $("#inputUrl").text();
-        var list = [
-            ["date", "dau", "mau", "userCount"],
-            ["20181030", "1", "2", "3"],
-            ["20181030", "1", "2", "3"],
-            ["20181030", "1", "2", "3"],
-            ["20181030", "1", "2", "3"],
-            ["20181030", "1", "2", "3"],
-        ];
+        var ref = $("#inputRef").val();
         if (!workbook.editor.range.hasrange) {
             alert("please select a range");
             return;
         }
-        workbook.addRemote(url, list);
-        /*$.get(url, function (data, status) {
+        var sheet = workbook.getCurrentSheet();
+        var info = workbook.addRemoteInfo(sheet, ref);
+        loadRemoteData(sheet, info);
+        workbook.refresh();
+    });
+    function getValueFromQuery (name) {
+        var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+        var r = window.location.search.substr(1).match(reg);
+        if(r!=null)return  unescape(r[2]); return null;
+    }
+    function loadFileData (fileData) {
+        var json = JSON.parse(fileData);
+        for (var name in json) {
+            var sheet = workbook.addNewSheet(name, json[name]);
+            for (var j = 0; j < sheet.remote.length; ++j) {
+                loadRemoteData(sheet, sheet.remote[j]);
+            }
+        }
+        workbook.refresh();
+    }
+    $("#buttonVisitLink").click(function () {
+        var link = window.location.origin + window.location.pathname + "?fileName=first.ss&owner=mabaiming";
+        alert(link);
+    });
+    $("#buttonSave").click(function () {
+        var content = workbook.generateFile();
+        $.post("/api/file", {
+                fileName:"first.ss",
+                owner:"mabaiming",
+                content: content
+            }, function(jsonstr) {
+            console.log(jsonstr);
+            var data = JSON.parse(jsonstr);
             if (data.code != 0) {
                 alert("failed to load " + url);
                 return;
             }
-            workbook.addRemote(range[0], range[1], url, data.list);
-        });*/
+            alert("OK");
+        });
+    });
+    $(document).ready(function() {
+        var fileName = getValueFromQuery("fileName");
+        var owner = getValueFromQuery("owner");
+        if (!fileName || !owner) {
+            return;
+        }
+        $.get("/api/file?fileName=" + fileName + "&owner=" + owner, function (jsonstr, status) {
+            console.log(jsonstr);
+            var data = JSON.parse(jsonstr);
+            if (data.code != 0) {
+                alert("failed to load " + url);
+                return;
+            }
+            var content = data.result.content;
+            loadFileData(content);
+        });
     });
 </script>
 </body>
