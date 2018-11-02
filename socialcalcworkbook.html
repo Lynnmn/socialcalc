@@ -47,23 +47,49 @@
         </label>
         <div class="action-btns"></div>
         <a href="" download="a.txt" id="aSave">
-            <img src="./images/download.png" title="下载excel文档">
+            <img class="other-btn" src="./images/download.png" title="导出excel文档">
         </a>
+        <img class="other-btn" src="./images/import.png" title="导入远程文档" data-toggle="modal" data-target="#myModal">
     </div>
-    <div class="input-group mb-3">
+
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span class="modal-title" id="myModalLabel">
+                        选择远程url加载数据
+                    </span>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" placeholder="http://" id="inputUrl">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                    </button>
+                    <button type="button" class="btn btn-primary" id="buttonLoad">
+                        加载
+                    </button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+    <!-- <div class="input-group mb-3">
         <div class="input-group-prepend">
             <span class="input-group-text">Url</span>
         </div>
-        <input type="text" class="form-control" placeholder="http://" id="inputUrl">
-    </div>
-    <button type="button" class="btn btn-primary" id="buttonLoad">load</button>
+        
+    </div> -->
+    <!-- <button type="button" class="btn btn-primary" id="buttonLoad">load</button> -->
     <div>
         <form class="form-inline">
             <label for="formula"><img src="./images/fx.png"></label>
-            <input type="email" class="form-control" id="formula" placeholder="=A1+A2">
+            <input type="email" id="formula" placeholder="=A1+A2">
         </form>
     </div>
-    <hr/>
+    
     <div>
         <div class="tab-content" id="sheet"></div>
         <ul class="nav nav-tabs" role="tablist">
