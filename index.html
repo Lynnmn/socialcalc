@@ -23,7 +23,7 @@
 <body>
 
 <div class="container-fluid">
-    <div>
+    <!--div>
         <ul class="nav">
             <li class="nav-item">
                 <a class="nav-link" href="#">File</a>
@@ -38,7 +38,7 @@
                 <a class="nav-link disabled" href="#">Help</a>
             </li>
         </ul>
-    </div>
+    </div-->
 
     <div class="btn-group btn-group-sm">
         <img class="icon-btn" src="./images/save.png" title="保存至服务器" data-toggle="modal" data-target="#save-to-server">
@@ -53,10 +53,6 @@
         <a href="" download="a.txt" id="aSave">
             <img class="icon-btn" src="./images/download.png" title="下载excel文档">
         </a>
-        
-
-        <!-- <button type="button" class="btn btn-primary" id="buttonSave">SaveToServer</button> -->
-        <!-- <button type="button" class="btn btn-primary" id="buttonVisitLink">VisitLink</button> -->
     </div>
 
     <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -71,7 +67,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <label>填写数据源: </label> <input type="text" id="inputRef" value="biz=personalize&table=训练计划创建情况&minDate=20181030&maxDate=20181031">
+                    <label>填写数据源: </label> <input type="text" id="inputRef" value="biz=personalize&table=训练计划创建情况&dateFrom=-1&dateTo=-10">
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">关闭
@@ -84,11 +80,11 @@
         </div><!-- /.modal -->
     </div>
 
-    <div class="modal fade" id="buttonVisitLink" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal fade" id="buttonVisitLink" tabindex="-1" role="dialog" aria-labelledby="myModalLabel1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <span class="modal-title" id="myModalLabel">
+                    <span class="modal-title" id="myModalLabel1">
                         分享链接
                     </span>
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
@@ -103,11 +99,11 @@
         </div><!-- /.modal -->
     </div>
 
-    <div class="modal fade" id="save-to-server" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal fade" id="save-to-server" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <span class="modal-title" id="myModalLabel">
+                    <span class="modal-title" id="myModalLabel2">
                         填写生成文件的文件名
                     </span>
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
@@ -115,7 +111,8 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <input placeholder="填写文件名" />
+                    <input placeholder="填写用户名" id="inputOwner"/>
+                    <input placeholder="填写文件名" id="inputFileName"/>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
@@ -124,32 +121,17 @@
             </div><!-- /.modal-content -->
         </div><!-- /.modal -->
     </div>
-
-    <!-- <div class="btn-group btn-group-sm">
-        <div class="input-group-prepend">
-            <span class="input-group-text">Url</span>
-        </div>
-        <input type="text" id="inputRef" value="biz=personalize&table=训练计划创建情况&minDate=20181030&maxDate=20181031">
-        <button type="button" class="btn btn-primary" id="buttonLoad">load</button>
-    </div> -->
     <div>
         <form class="form-inline">
             <label for="formula"><img src="./images/fx.png"></label>
             <input type="text" id="formula" placeholder="=A1+A2">
         </form>
     </div>
-
     <div>
-        <div class="tab-content" id="sheet"></div>
+        <div class="tab-content container-fluid" id="sheet"></div>
         <ul class="nav nav-tabs" role="tablist">
             <li class="nav-item">
                 <a class="nav-link active" data-toggle="tab" href="#sheet1" id="sheet1">sheet1</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-toggle="tab" href="#sheet2" id="sheet2">sheet2</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-toggle="tab" href="#sheet3" id="sheet3">sheet3</a>
             </li>
             <li class="add-sheet" id="add-sheet-btn">
                 <img src="./images/add-sheet.png" >
@@ -157,15 +139,13 @@
         </ul>
         
     </div>
-    <div class="alert alert-success">
+    <!-- div class="alert alert-success">
         指定操作成功提示信息。
-    </div>
+    </div -->
 </div>
 <script>
     var workbook = new SocialCalc.Workbook();
     workbook.addNewSheet("sheet1");
-    workbook.addNewSheet("sheet2");
-    workbook.addNewSheet("sheet3");
     workbook.selectSheet("sheet1", "sheet", "formula");
 
     $("#add-sheet-btn").click(function(e) {
@@ -245,9 +225,19 @@
         $("#buttonVisitLink .modal-body").html(link)
     });
     $("#buttonSave").click(function () {
+        var fileName = $("#inputFileName").val();
+        var owner = $("#inputOwner").val();
+        if (!fileName) {
+            alert("please input file name");
+            return;
+        }
+        if (!owner) {
+            alert("please owner name");
+            return;
+        }
         var content = workbook.generateFile();
         $.post("/api/file", {
-                fileName:"first.ss",
+                fileName: fileName,
                 owner:"mabaiming",
                 content: content
             }, function(jsonstr) {
@@ -275,6 +265,8 @@
             }
             var content = data.result.content;
             loadFileData(content);
+            $("#inputFileName").val(fileName);
+            $("#inputOwner").val(owner);
         });
     });
 

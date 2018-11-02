@@ -50,7 +50,7 @@ SocialCalc.Workbook = function() {
             return;
         }
         var editor = new SocialCalc.TableEditor(sheetInfo.context);
-        var node = editor.CreateTableEditor(1800, 700);
+        var node = editor.CreateTableEditor(document.body.clientWidth - 20, 850); // document.body.clientHeight);
         var inputbox = new SocialCalc.InputBox(document.getElementById(formulaId), editor);
         var parentNode = document.getElementById(parentId);
         for (child=parentNode.firstChild; child!=null; child=parentNode.firstChild) {
