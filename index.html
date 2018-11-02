@@ -131,7 +131,6 @@
         <div class="tab-content container-fluid" id="sheet"></div>
         <ul class="nav nav-tabs" role="tablist">
             <li class="nav-item">
-                <a class="nav-link active" data-toggle="tab" href="#sheet1" id="sheet1">sheet1</a>
             </li>
             <li class="add-sheet" id="add-sheet-btn">
                 <img src="./images/add-sheet.png" >
@@ -144,34 +143,69 @@
     </div -->
 </div>
 <script>
-    var workbook = new SocialCalc.Workbook();
-    workbook.addNewSheet("sheet1");
-    workbook.selectSheet("sheet1", "sheet", "formula");
+    let workbook = new SocialCalc.Workbook("sheet", "formula");
+    let sheetIdMap = {};
+    let config = {
+        fileName: "",
+        owner: "",
+    };
+    function generateSheetId () {
+        let i = 1;
+        while (true) {
+            let name = "sheet" + i;
+            if (!sheetIdMap[name]) {
+                sheetIdMap[name] = 1;
+                return name;
+            }
+            ++i;
+        }
+    }
+
+    function addNewSheetTab (sheetInfo) {
+        const sheetId = generateSheetId();
+        if (!sheetInfo) {
+            sheetInfo = workbook.addNewSheet();
+        }
+        const newLi = $('<li class="nav-item"><a class="nav-link" data-toggle="tab" href="#'+ sheetId +'" id="'+ sheetId +'">'+ sheetInfo.name +'</a></li>');
+        $("#add-sheet-btn").before(newLi);
+        addSheetTabMethod(sheetId);
+    }
 
     $("#add-sheet-btn").click(function(e) {
-        const length = $(this).siblings().length
-        const newLi = $('<li class="nav-item"><a class="nav-link" data-toggle="tab" href="#sheet'+ (length + 1) +'" id="sheet'+ (length + 1) +'">sheet'+ (length + 1) +'</a></li>')
-        const newId = "sheet"+ ( length + 1 )
-        $(this).before(newLi)
-        workbook.addNewSheet(newId);
-    })
- 
+        addNewSheetTab();
+    });
+
+    function addSheetTabMethod (sheetId) {
+        let id = "#" + sheetId;
+        $(id).dblclick(function () {
+            const oldName = $(id).text();
+            const newName = window.prompt("重命名sheet", oldName);
+            if (newName && workbook.renameSheet(oldName, newName)) {
+                $(id).text(newName);
+            }
+        });
+        $(id).click(function () {
+            const oldName = $(id).text();
+            workbook.selectSheet(oldName);
+        });
+    }
+
     $(document).on('click', ".nav-item", function(){
         const id = $(this).children().attr("ID")
         workbook.selectSheet(id, "sheet", "formula");
     })
 
     $("#aSave").click(function (e) {
-        var str = workbook.generateFile();
+        let str = workbook.generateFile();
         alert(str);
-        var fileStr = "data:text/plain;charset=utf-8," + str;
+        let fileStr = "data:text/plain;charset=utf-8," + str;
         $('#aSave').attr('href',fileStr);
     });
     $("#inputFile").change(function (e) {
-        for (var i = 0; i < this.files.length; i++) {
-            var file = this.files[i];
+        for (let i = 0; i < this.files.length; i++) {
+            let file = this.files[i];
             console.log(file);
-            var fr = new FileReader();
+            let fr = new FileReader();
             fr.readAsText(file);
             fr.onload = function () {
                 console.log(this.result);
@@ -181,11 +215,11 @@
     });
     function loadRemoteData (sheet, info) {
         if (sheet.remote && sheet.remote.length > 0) {
-            // var ref = "biz=personalize&table=训练计划创建情况&dateFrom=20181030&dateTo=20181031";
-            var url = "/api/stat?" + info.ref;
+            // let ref = "biz=personalize&table=训练计划创建情况&dateFrom=20181030&dateTo=20181031";
+            let url = "/api/stat?" + info.ref;
             $.get(url, function (jsonstr, status) {
                 console.log(jsonstr);
-                var data = JSON.parse(jsonstr);
+                let data = JSON.parse(jsonstr);
                 if (data.code != 0) {
                     alert("failed to load " + url);
                     return;
@@ -195,48 +229,55 @@
         }
     }
     $("#imgLoad").click(function () {
-        var obj = document.getElementById("modelLoad");;
+        let obj = document.getElementById("modelLoad");;
         SocialCalc.Keyboard.passThru = obj;
         obj.focus();
     });
     $("#imgSave").click(function () {
-        var obj = document.getElementById("modelSaveToServer");;
+        let obj = document.getElementById("modelSaveToServer");;
         SocialCalc.Keyboard.passThru = obj;
         obj.focus();
     });
     $("#buttonLoad").click(function() {
-        var ref = $("#inputRef").val();
+        let ref = $("#inputRef").val();
         if (!workbook.editor.range.hasrange) {
             alert("please select a range");
             return;
         }
-        var sheet = workbook.getCurrentSheet();
-        var info = workbook.addRemoteInfo(sheet, ref);
+        let sheet = workbook.getCurrentSheet();
+        let info = workbook.addRemoteInfo(sheet, ref);
         loadRemoteData(sheet, info);
         workbook.refresh();
     });
     function getValueFromQuery (name) {
-        var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
-        var r = window.location.search.substr(1).match(reg);
-        if(r!=null)return  unescape(r[2]); return null;
+        let reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+        let r = window.location.search.substr(1).match(reg);
+        return r != null ? decodeURIComponent(r[2]) : null;
     }
     function loadFileData (fileData) {
-        var json = JSON.parse(fileData);
-        for (var name in json) {
-            var sheet = workbook.addNewSheet(name, json[name]);
-            for (var j = 0; j < sheet.remote.length; ++j) {
-                loadRemoteData(sheet, sheet.remote[j]);
+        let list = JSON.parse(fileData);
+        let first = true;
+        for (let i = 0; i < list.length; ++i) {
+            let info = list[i];
+            let sheetInfo = workbook.addNewSheet(info.name, info.content, first);
+            addNewSheetTab(sheetInfo);
+            first = false;
+            for (let j = 0; j < sheetInfo.sheet.remote.length; ++j) {
+                loadRemoteData(sheetInfo.sheet, sheetInfo.sheet.remote[j]);
             }
         }
-        workbook.refresh();
+        if (!first) {
+            workbook.refresh();
+        }
     }
     $("#show-share-link").click(function () {
-        var link = window.location.origin + window.location.pathname + "?fileName=first.ss&owner=mabaiming";
-        $("#buttonVisitLink .modal-body").html(link)
+        let link = window.location.origin + window.location.pathname
+            + "?fileName=" + config.fileName + "&owner=" + config.owner;
+        $("#modelShareLink .modal-body").html(link)
     });
     $("#buttonSave").click(function () {
-        var fileName = $("#inputFileName").val();
-        var owner = $("#inputOwner").val();
+        let fileName = $("#inputFileName").val();
+        let owner = $("#inputOwner").val();
         if (!fileName) {
             alert("please input file name");
             return;
@@ -245,38 +286,43 @@
             alert("please owner name");
             return;
         }
-        var content = workbook.generateFile();
+        let content = workbook.generateFile();
         $.post("/api/file", {
                 fileName: fileName,
-                owner:"mabaiming",
+                owner: owner,
                 content: content
             }, function(jsonstr) {
             console.log(jsonstr);
-            var data = JSON.parse(jsonstr);
+            let data = JSON.parse(jsonstr);
             if (data.code != 0) {
-                alert("failed to load " + url);
+                alert("failed to load file: " + fileName + ", owner: " + owner);
                 return;
             }
             alert("OK");
+            config.fileName = fileName;
+            config.owner = owner;
         });
     });
     $(document).ready(function() {
-        var fileName = getValueFromQuery("fileName");
-        var owner = getValueFromQuery("owner");
+        let fileName = getValueFromQuery("fileName");
+        let owner = getValueFromQuery("owner");
         if (!fileName || !owner) {
+            addNewSheetTab();
             return;
         }
         $.get("/api/file?fileName=" + fileName + "&owner=" + owner, function (jsonstr, status) {
             console.log(jsonstr);
-            var data = JSON.parse(jsonstr);
+            let data = JSON.parse(jsonstr);
             if (data.code != 0) {
                 alert("failed to load " + url);
                 return;
             }
-            var content = data.result.content;
+            let content = data.result.content;
             loadFileData(content);
             $("#inputFileName").val(fileName);
             $("#inputOwner").val(owner);
+            config.fileName = fileName;
+            config.owner = owner;
         });
     });
 
