@@ -19,6 +19,7 @@
     <script type="text/javascript" src="js/socialcalcactionbtns.js"></script>
     <link rel="stylesheet" type="text/css" href="css/socialcalc.css">
     <link rel="stylesheet" type="text/css" href="css/index.css">
+    <link rel="stylesheet" type="text/css" href="css/reset.css">
 </head>
 <body>
 
@@ -157,11 +158,13 @@
         </ul>
         
     </div>
-    <div class="alert alert-success">
+    <div class="alert-tips">
         指定操作成功提示信息。
     </div>
 </div>
 <script>
+    $(".tab-content").css({ "height": (document.body.scrollHeight - 198) + 'px' })
+
     var workbook = new SocialCalc.Workbook();
     workbook.addNewSheet("sheet1");
     workbook.addNewSheet("sheet2");
