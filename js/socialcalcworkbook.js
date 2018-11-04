@@ -195,4 +195,31 @@ SocialCalc.Workbook = function(parentId, formulaId) {
         }
     }
 
+    this.executeCommand = function(combostr, sstr) {
+        var eobj = this.editor;
+
+        var str = {};
+        str.P = "%";
+        str.N = "\n"
+        if (eobj.range.hasrange) {
+            str.R = SocialCalc.crToCoord(eobj.range.left, eobj.range.top)+
+                ":"+SocialCalc.crToCoord(eobj.range.right, eobj.range.bottom);
+            str.C = str.R;
+            str.W = SocialCalc.rcColname(eobj.range.left) + ":" + SocialCalc.rcColname(eobj.range.right);
+        }
+        else {
+            str.C = eobj.ecell.coord;
+            str.R = eobj.ecell.coord+":"+eobj.ecell.coord;
+            str.W = SocialCalc.rcColname(SocialCalc.coordToCr(eobj.ecell.coord).col);
+        }
+        str.S = sstr;
+        combostr = combostr.replace(/%C/g, str.C);
+        combostr = combostr.replace(/%R/g, str.R);
+        combostr = combostr.replace(/%N/g, str.N);
+        combostr = combostr.replace(/%S/g, str.S);
+        combostr = combostr.replace(/%W/g, str.W);
+        combostr = combostr.replace(/%P/g, str.P);
+
+        eobj.EditorScheduleSheetCommands(combostr, true, false);
+    }
 }

@@ -304,6 +304,11 @@
         });
     });
     $(document).ready(function() {
+        $(".icon-btn").click(function () {
+            const command = $(this).attr("command");
+            const arg = $(this).attr("arg");
+            workbook.executeCommand(command, arg);
+        });
         let fileName = getValueFromQuery("fileName");
         let owner = getValueFromQuery("owner");
         if (!fileName || !owner) {
@@ -325,7 +330,6 @@
             config.owner = owner;
         });
     });
-
     $(".select-time").showCalendar();
 
 </script>
