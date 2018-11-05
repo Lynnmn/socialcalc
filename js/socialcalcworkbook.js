@@ -45,6 +45,13 @@ SocialCalc.Workbook = function(parentId, formulaId) {
         return -1;
     }
 
+    function caclEditorSize () {
+        return {
+            width: document.body.clientWidth - 10,
+            height: document.body.clientHeight - $("#first-part-actions").height() - $("#nav-tabs").height() - 10
+        };
+    }
+
     this.addNewSheet = function (name, str, selected) {
         var sheetInfo = null;
         if (!name) {
@@ -129,7 +136,8 @@ SocialCalc.Workbook = function(parentId, formulaId) {
             return;
         }
         var editor = new SocialCalc.TableEditor(sheetInfo.context);
-        var node = editor.CreateTableEditor(document.body.clientWidth - 20, document.body.clientHeight - $("#first-part-actions").height() - $("#nav-tabs").height() - 10 ); // document.body.clientHeight);
+        const size = caclEditorSize();
+        var node = editor.CreateTableEditor(size.width, size.height);
         var inputbox = new SocialCalc.InputBox(document.getElementById(this.formulaId), editor);
         var parentNode = document.getElementById(this.parentId);
         for (child=parentNode.firstChild; child!=null; child=parentNode.firstChild) {
@@ -221,5 +229,10 @@ SocialCalc.Workbook = function(parentId, formulaId) {
         combostr = combostr.replace(/%P/g, str.P);
 
         eobj.EditorScheduleSheetCommands(combostr, true, false);
+    }
+
+    this.resize = function () {
+        const size = caclEditorSize();
+        this.editor.ResizeTableEditor(size.width, size.height);
     }
 }
