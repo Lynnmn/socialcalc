@@ -26,9 +26,9 @@ $(document).ready(function() {
         "button_deleterow": {"img": "button_deleterow","tooltip": "删除行", "command": "deleterow %C"},
         "button_deletecol": {"img": "button_deletecol","tooltip": "删除列", "command": "deletecol %C"},
         "line4": {"img": "line","tooltip": "", "command": ""},
-        "button_percent": {"img": "button_alignleft","tooltip": "%", "command": "set %C nontextvalueformat #,##0.00%"},
-        "button_dot2": {"img": "button_aligncenter","tooltip": "%", "command": "set %C nontextvalueformat #,##0.00"},
-        "button_int": {"img": "button_alignright","tooltip": "%", "command": "set %C nontextvalueformat #,##0"},
+        "button_percent": {"img": "percent","tooltip": "切换成百分比格式", "command": "set %C nontextvalueformat #,##0.00%"},
+        "button_dot2": {"img": "dot","tooltip": "保留两位小数", "command": "set %C nontextvalueformat #,##0.00"},
+        "button_int": {"img": "int","tooltip": "保留整数", "command": "set %C nontextvalueformat #,##0"},
         "line5": {"img": "line","tooltip": "", "command": ""},
     }
     
