@@ -4680,16 +4680,22 @@ SocialCalc.PositionTableControlElements = function(control) {
       }
    else {
       border = control.controlborder+"px";
+      // border = "83px"
       control.endcap.style.left = control.endcapstart+"px";
       control.endcap.style.top = border;
+      // control.endcap.style.bottom = border;
       control.paneslider.style.left = control.panesliderstart+"px";
       control.paneslider.style.top = border
+      // control.paneslider.style.bottom = border
       control.lessbutton.style.left = control.lessbuttonstart+"px";
       control.lessbutton.style.top = border;
+      // control.lessbutton.style.bottom = border;
       control.morebutton.style.left = control.morebuttonstart+"px";
       control.morebutton.style.top = border;
+      // control.morebutton.style.bottom = border;
       control.scrollarea.style.left = control.scrollareastart+"px";
       control.scrollarea.style.top = border;
+      // control.scrollarea.style.bottom = border;
       control.scrollarea.style.width = control.scrollareasize+"px";
       realend = Math.max(editor.context.sheetobj.attribs.lastcol, editor.firstscrollingcol+1);
       thumbpos = ((editor.firstscrollingcol-(editor.lastnonscrollingcol+1))*(control.scrollareasize-control.thumbthickness))/
@@ -4697,6 +4703,7 @@ SocialCalc.PositionTableControlElements = function(control) {
       thumbpos = Math.floor(thumbpos);
       control.thumb.style.left = thumbpos+"px";
       control.thumb.style.top = border;
+      // control.thumb.style.bottom = border;
       }
    control.thumbpos = thumbpos;
    control.main.style.display="block";

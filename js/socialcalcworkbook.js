@@ -129,7 +129,7 @@ SocialCalc.Workbook = function(parentId, formulaId) {
             return;
         }
         var editor = new SocialCalc.TableEditor(sheetInfo.context);
-        var node = editor.CreateTableEditor(document.body.clientWidth - 20, 850); // document.body.clientHeight);
+        var node = editor.CreateTableEditor(document.body.clientWidth - 20, document.body.clientHeight - $("#first-part-actions").height() - $("#nav-tabs").height() - 10 ); // document.body.clientHeight);
         var inputbox = new SocialCalc.InputBox(document.getElementById(this.formulaId), editor);
         var parentNode = document.getElementById(this.parentId);
         for (child=parentNode.firstChild; child!=null; child=parentNode.firstChild) {

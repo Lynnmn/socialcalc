@@ -19,41 +19,36 @@
     <script type="text/javascript" src="js/socialcalcactionbtns.js"></script>
     <link rel="stylesheet" type="text/css" href="css/socialcalc.css">
     <link rel="stylesheet" type="text/css" href="css/index.css">
+    <link rel="stylesheet" type="text/css" href="css/reset.css">
 </head>
 <body>
 
 <div class="container-fluid">
-    <!--div>
-        <ul class="nav">
-            <li class="nav-item">
-                <a class="nav-link" href="#">File</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">Edit</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">View</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link disabled" href="#">Help</a>
-            </li>
-        </ul>
-    </div-->
-
-    <div class="btn-group btn-group-sm">
-        <img class="icon-btn" src="./images/save.png" title="保存至服务器" data-toggle="modal" data-target="#modelSaveToServer" id="imgSave">
-        <label class="input-file">
-            <input type="file" name="inputFile" id="inputFile" value="" multiple="multiple"/>
-            <img class="icon-btn" src="./images/input_file.png" title="选择文件" >
-        </label>
-        <img class="icon-btn" src="./images/import.png" title="导入远程文档" data-toggle="modal" data-target="#modelLoad" id="imgLoad">
-        <img class="icon-btn" src="./images/share.png" title="分享链接" data-toggle="modal" data-target="#modelShareLink" id="show-share-link" >
-
-        <div class="action-btns"></div>
-        <a href="" download="a.txt" id="aSave">
-            <img class="icon-btn" src="./images/download.png" title="下载excel文档">
-        </a>
+    <div class="first-part-actions" id="first-part-actions">
+        <div class="btn-group btn-group-sm">
+            <img class="icon-btn" src="./images/save.png" title="保存至服务器" data-toggle="modal" data-target="#modelSaveToServer" id="imgSave">
+            <label class="input-file">
+                <input type="file" name="inputFile" id="inputFile" value="" multiple="multiple"/>
+                <img class="icon-btn" src="./images/input_file.png" title="选择文件" >
+            </label>
+            <img class="icon-btn" src="./images/import.png" title="导入远程文档" data-toggle="modal" data-target="#modelLoad" id="imgLoad">
+            <img class="icon-btn" src="./images/share.png" title="分享链接" data-toggle="modal" data-target="#modelShareLink" id="show-share-link" >
+    
+            <div class="action-btns"></div>
+            <a href="" download="a.txt" id="aSave">
+                <img class="icon-btn" src="./images/download.png" title="下载excel文档">
+            </a>
+        </div>
+        
+        <div>
+            <form class="form-inline">
+                <label for="formula"><img src="./images/fx.png"></label>
+                <input type="text" id="formula" placeholder="=A1+A2">
+            </form>
+        </div>
     </div>
+
+ 
 
     <div class="modal fade" id="modelLoad" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -121,28 +116,25 @@
             </div><!-- /.modal-content -->
         </div><!-- /.modal -->
     </div>
-    <div>
-        <form class="form-inline">
-            <label for="formula"><img src="./images/fx.png"></label>
-            <input type="text" id="formula" placeholder="=A1+A2">
-        </form>
-    </div>
+
+
     <div>
         <div class="tab-content container-fluid" id="sheet"></div>
-        <ul class="nav nav-tabs" role="tablist">
-            <li class="nav-item">
-            </li>
+        <ul class="nav nav-tabs" id="nav-tabs" role="tablist">
+            <!-- <li class="nav-item"></li> -->
             <li class="add-sheet" id="add-sheet-btn">
                 <img src="./images/add-sheet.png" >
             </li>
         </ul>
-        
     </div>
     <!-- div class="alert alert-success">
         指定操作成功提示信息。
     </div -->
 </div>
 <script>
+    // var workbook = new SocialCalc.Workbook();
+    // workbook.addNewSheet("sheet1");
+    // workbook.selectSheet("sheet1", "sheet", "formula");
     let workbook = new SocialCalc.Workbook("sheet", "formula");
     let sheetIdMap = {};
     let config = {
@@ -313,6 +305,7 @@
         let owner = getValueFromQuery("owner");
         if (!fileName || !owner) {
             addNewSheetTab();
+            $("ul#nav-tabs").find("li:first-child").find("a").addClass("active show")
             return;
         }
         $.get("/api/file?fileName=" + fileName + "&owner=" + owner, function (jsonstr, status) {
