@@ -4025,8 +4025,8 @@ SocialCalc.RenderContext = function(sheetobj) {
       {
          cursor: {style: scc.defaultHighlightTypeCursorStyle, className: scc.defaultHighlightTypeCursorClass},
          range: {style: scc.defaultHighlightTypeRangeStyle, className: scc.defaultHighlightTypeRangeClass},
-         cursorinsertup: {style: "color:#FFF;backgroundColor:#A6A6A6;backgroundRepeat:repeat-x;backgroundPosition:top left;backgroundImage:url("+scc.defaultImagePrefix+"cursorinsertup.gif);", className: scc.defaultHighlightTypeCursorClass},
-         cursorinsertleft: {style: "color:#FFF;backgroundColor:#A6A6A6;backgroundRepeat:repeat-y;backgroundPosition:top left;backgroundImage:url("+scc.defaultImagePrefix+"cursorinsertleft.gif);", className: scc.defaultHighlightTypeCursorClass},
+         cursorinsertup: {style: "color:#FFF;border:2px solid #73a2e3;backgroundRepeat:repeat-x;backgroundPosition:top left;backgroundImage:url("+scc.defaultImagePrefix+"cursorinsertup.gif);", className: scc.defaultHighlightTypeCursorClass},
+         cursorinsertleft: {style: "color:#FFF;border:2px solid #73a2e3;backgroundRepeat:repeat-y;backgroundPosition:top left;backgroundImage:url("+scc.defaultImagePrefix+"cursorinsertleft.gif);", className: scc.defaultHighlightTypeCursorClass},
          range2: {style: "color:#000;backgroundColor:#FFF;backgroundImage:url("+scc.defaultImagePrefix+"range2.gif);", className: ""}
       }
 
@@ -4491,7 +4491,7 @@ SocialCalc.RenderSizingRow = function(context) {
    if (context.showRCHeaders) {
       newcell=document.createElement("td");
       newcell.style.width=context.rownamewidth+"px";
-      newcell.height="1";
+    //   newcell.height="1";
       result.appendChild(newcell);
       }
 
@@ -4500,13 +4500,13 @@ SocialCalc.RenderSizingRow = function(context) {
          newcell=document.createElement("td");
          t = context.colwidth[colnum];
          if (t) newcell.width=t;
-         newcell.height="1";
+        //  newcell.height="1";
          result.appendChild(newcell);
          }
       if (colpane<context.colpanes.length-1) {
          newcell=document.createElement("td");
          newcell.width=context.defaultpanedividerwidth;
-         newcell.height="1";
+        //  newcell.height="1";
          result.appendChild(newcell);
          }
       }

@@ -139,18 +139,18 @@ SocialCalc.Constants = {
    // For each of the following default sheet display values at least one of class and/or style are needed
 
    defaultHighlightTypeCursorClass: "",
-   defaultHighlightTypeCursorStyle: "color:#FFF;backgroundColor:#A6A6A6;",
+   defaultHighlightTypeCursorStyle: "color:#FFF;border:2px solid #73a2e3",
    defaultHighlightTypeRangeClass: "",
-   defaultHighlightTypeRangeStyle: "color:#000;backgroundColor:#E5E5E5;",
+   defaultHighlightTypeRangeStyle: "color:#000;backgroundColor:#e3edf9;",
 
    defaultColnameClass: "", // regular column heading letters, needs a cursor property 
-   defaultColnameStyle: "font-size:small;text-align:center;color:#FFFFFF;background-color:#808080;cursor:e-resize;",
+   defaultColnameStyle: "font-size:small;text-align:center;color:#666;background-color:#f7f7f7;cursor:e-resize;border-left:1px solid #c0c0c0;border-bottom:1px solid #c0c0c0;",
    defaultSelectedColnameClass: "", // column with selected cell, needs a cursor property 
-   defaultSelectedColnameStyle: "font-size:small;text-align:center;color:#FFFFFF;background-color:#404040;cursor:e-resize;",
+   defaultSelectedColnameStyle: "font-size:small;text-align:center;color:#666;background-color:#e0e0e0;cursor:e-resize;border-bottom:1px solid #c0c0c0;",
    defaultRownameClass: "", // regular row heading numbers
-   defaultRownameStyle: "font-size:small;text-align:right;color:#FFFFFF;background-color:#808080;",
+   defaultRownameStyle: "font-size:small;text-align:right;color:#666;background-color:#f7f7f7;border-bottom:1px solid #c0c0c0;border-right:1px solid #c0c0c0;width:50px;text-align:center",
    defaultSelectedRownameClass: "", // column with selected cell, needs a cursor property 
-   defaultSelectedRownameStyle: "font-size:small;text-align:right;color:#FFFFFF;background-color:#404040;",
+   defaultSelectedRownameStyle: "font-size:small;text-align:right;color:#666;background-color:#e0e0e0;border-bottom:1px solid #c0c0c0;border-right:1px solid #c0c0c0;width:50px;text-align:center",
    defaultUpperLeftClass: "", // Corner cell in upper left
    defaultUpperLeftStyle: "font-size:small;",
    defaultSkippedCellClass: "", // used if present for spanned cells peeking into a pane (at least one of class/style needed)
@@ -281,7 +281,7 @@ SocialCalc.Constants = {
    //*** SocialCalc.TCTDragFunctionStart
 
    TCTDFSthumbstatusvClass: "", // at least one of class/style for vertical thumb dragging status display in table control
-   TCTDFSthumbstatusvStyle: "height:20px;width:auto;border:3px solid #808080;overflow:hidden;"+
+   TCTDFSthumbstatusvStyle: "height:20px;width:auto;border:3px solid #f7f7f7;overflow:hidden;"+
                            "backgroundColor:#FFF;fontSize:small;position:absolute;zIndex:100;",
                            // if present, pseudo style (text-align is textAlign)
    TCTDFSthumbstatushClass: "", // at least one of class/style for horizontal thumb dragging status display in table control
@@ -289,7 +289,7 @@ SocialCalc.Constants = {
                            "backgroundColor:#FFF;fontSize:small;position:absolute;zIndex:100;",
                            // if present, pseudo style (text-align is textAlign)
    TCTDFSthumbstatusrownumClass: "", // at least one of class/style for thumb dragging status display in table control
-   TCTDFSthumbstatusrownumStyle: "color:#FFF;background-color:#808080;font-size:small;white-space:nowrap;padding:3px;", // if present, real style
+   TCTDFSthumbstatusrownumStyle: "color:#FFF;background-color:#f7f7f7;font-size:small;white-space:nowrap;padding:3px;", // if present, real style
    TCTDFStopOffsetv: 0, // offsets for thumbstatus display while dragging
    TCTDFSleftOffsetv: -80,
    s_TCTDFthumbstatusPrefixv: "Row ", // Text Control Drag Function text before row number
@@ -321,10 +321,10 @@ SocialCalc.Constants = {
 
    //*** SocialCalc.SpreadsheetControl
 
-   SCToolbarbackground: "background-color:#404040;",
+   SCToolbarbackground: "background-color:#e0e0e0;",
    SCTabbackground: "background-color:#CCC;",
-   SCTabselectedCSS: "font-size:small;padding:6px 30px 6px 8px;color:#FFF;background-color:#404040;cursor:default;border-right:1px solid #CCC;",
-   SCTabplainCSS: "font-size:small;padding:6px 30px 6px 8px;color:#FFF;background-color:#808080;cursor:default;border-right:1px solid #CCC;",
+   SCTabselectedCSS: "font-size:small;padding:6px 30px 6px 8px;color:#FFF;background-color:#e0e0e0;cursor:default;border-right:1px solid #CCC;",
+   SCTabplainCSS: "font-size:small;padding:6px 30px 6px 8px;color:#FFF;background-color:#f7f7f7;cursor:default;border-right:1px solid #CCC;",
    SCToolbartext: "font-size:x-small;font-weight:bold;color:#FFF;padding-bottom:4px;",
 
    SCFormulabarheight: 30, // in pixels, will contain a text input box
@@ -378,7 +378,7 @@ SocialCalc.Constants = {
 
    //*** SocialCalc.InitializeSpreadsheetControl
 
-   ISCButtonBorderNormal: "#404040",
+   ISCButtonBorderNormal: "#e0e0e0",
    ISCButtonBorderHover: "#999",
    ISCButtonBorderDown: "#FFF",
    ISCButtonDownBackground: "#888",
