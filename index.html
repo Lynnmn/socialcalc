@@ -22,7 +22,6 @@
     <link rel="stylesheet" type="text/css" href="css/reset.css">
 </head>
 <body>
-
 <div class="container-fluid">
     <div class="first-part-actions" id="first-part-actions">
         <div class="btn-group btn-group-sm">
@@ -47,9 +46,6 @@
             </form>
         </div>
     </div>
-
- 
-
     <div class="modal fade" id="modelLoad" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -132,9 +128,6 @@
     </div -->
 </div>
 <script>
-    // var workbook = new SocialCalc.Workbook();
-    // workbook.addNewSheet("sheet1");
-    // workbook.selectSheet("sheet1", "sheet", "formula");
     let workbook = new SocialCalc.Workbook("sheet", "formula");
     let sheetIdMap = {};
     let config = {
@@ -300,6 +293,9 @@
             const command = $(this).attr("command");
             const arg = $(this).attr("arg");
             workbook.executeCommand(command, arg);
+        });
+        $(window).resize(function () {
+            workbook.resize();
         });
         let fileName = getValueFromQuery("fileName");
         let owner = getValueFromQuery("owner");
