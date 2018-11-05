@@ -18,8 +18,7 @@ input:focus, input:hover {
     width: 100%;
     background: #f7f7f7;
     padding: 10px;
-    /* margin: 10px 0; */
-    box-shadow: 3px 3px 3px #eee;
+    box-shadow: 1px 1px 1px #999;
 }
 
 .btn-group img {
