@@ -24,39 +24,33 @@
 <body>
 
 <div class="container-fluid">
-    <!--div>
-        <ul class="nav">
-            <li class="nav-item">
-                <a class="nav-link" href="#">File</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">Edit</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">View</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link disabled" href="#">Help</a>
-            </li>
-        </ul>
-    </div-->
-
-    <div class="btn-group btn-group-sm">
-        <img class="icon-btn" src="./images/save.png" title="保存至服务器" data-toggle="modal" data-target="#save-to-server">
-        <label class="input-file">
-            <input type="file" name="inputFile" id="inputFile" value="" multiple="multiple"/>
-            <img class="icon-btn" src="./images/input_file.png" title="选择文件" >
-        </label>
-        <img class="icon-btn" src="./images/import.png" title="导入远程文档" data-toggle="modal" data-target="#myModal">
-        <img class="icon-btn" src="./images/share.png" title="分享链接" data-toggle="modal" data-target="#buttonVisitLink" id="show-share-link" >
-
-        <div class="action-btns"></div>
-        <a href="" download="a.txt" id="aSave">
-            <img class="icon-btn" src="./images/download.png" title="下载excel文档">
-        </a>
+    <div class="first-part-actions" id="first-part-actions">
+        <div class="btn-group btn-group-sm">
+            <img class="icon-btn" src="./images/save.png" title="保存至服务器" data-toggle="modal" data-target="#modelSaveToServer" id="imgSave">
+            <label class="input-file">
+                <input type="file" name="inputFile" id="inputFile" value="" multiple="multiple"/>
+                <img class="icon-btn" src="./images/input_file.png" title="选择文件" >
+            </label>
+            <img class="icon-btn" src="./images/import.png" title="导入远程文档" data-toggle="modal" data-target="#modelLoad" id="imgLoad">
+            <img class="icon-btn" src="./images/share.png" title="分享链接" data-toggle="modal" data-target="#modelShareLink" id="show-share-link" >
+    
+            <div class="action-btns"></div>
+            <a href="" download="a.txt" id="aSave">
+                <img class="icon-btn" src="./images/download.png" title="下载excel文档">
+            </a>
+        </div>
+        
+        <div>
+            <form class="form-inline">
+                <label for="formula"><img src="./images/fx.png"></label>
+                <input type="text" id="formula" placeholder="=A1+A2">
+            </form>
+        </div>
     </div>
 
-    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+ 
+
+    <div class="modal fade" id="modelLoad" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -81,7 +75,7 @@
         </div><!-- /.modal -->
     </div>
 
-    <div class="modal fade" id="buttonVisitLink" tabindex="-1" role="dialog" aria-labelledby="myModalLabel1" aria-hidden="true">
+    <div class="modal fade" id="modelShareLink" tabindex="-1" role="dialog" aria-labelledby="myModalLabel1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -100,7 +94,7 @@
         </div><!-- /.modal -->
     </div>
 
-    <div class="modal fade" id="save-to-server" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2" aria-hidden="true">
+    <div class="modal fade" id="modelSaveToServer" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -122,59 +116,88 @@
             </div><!-- /.modal-content -->
         </div><!-- /.modal -->
     </div>
-    <div>
-        <form class="form-inline">
-            <label for="formula"><img src="./images/fx.png"></label>
-            <input type="text" id="formula" placeholder="=A1+A2">
-        </form>
-    </div>
+
+
     <div>
         <div class="tab-content container-fluid" id="sheet"></div>
-        <ul class="nav nav-tabs" role="tablist">
-            <li class="nav-item">
-                <a class="nav-link active" data-toggle="tab" href="#sheet1" id="sheet1">sheet1</a>
-            </li>
+        <ul class="nav nav-tabs" id="nav-tabs" role="tablist">
+            <!-- <li class="nav-item"></li> -->
             <li class="add-sheet" id="add-sheet-btn">
                 <img src="./images/add-sheet.png" >
             </li>
         </ul>
-        
     </div>
     <!-- div class="alert alert-success">
         指定操作成功提示信息。
     </div -->
 </div>
 <script>
-    $(".tab-content").css({ "height": (document.body.scrollHeight - 198) + 'px' })
+    // var workbook = new SocialCalc.Workbook();
+    // workbook.addNewSheet("sheet1");
+    // workbook.selectSheet("sheet1", "sheet", "formula");
+    let workbook = new SocialCalc.Workbook("sheet", "formula");
+    let sheetIdMap = {};
+    let config = {
+        fileName: "",
+        owner: "",
+    };
+    function generateSheetId () {
+        let i = 1;
+        while (true) {
+            let name = "sheet" + i;
+            if (!sheetIdMap[name]) {
+                sheetIdMap[name] = 1;
+                return name;
+            }
+            ++i;
+        }
+    }
 
-    var workbook = new SocialCalc.Workbook();
-    workbook.addNewSheet("sheet1");
-    workbook.selectSheet("sheet1", "sheet", "formula");
+    function addNewSheetTab (sheetInfo) {
+        const sheetId = generateSheetId();
+        if (!sheetInfo) {
+            sheetInfo = workbook.addNewSheet();
+        }
+        const newLi = $('<li class="nav-item"><a class="nav-link" data-toggle="tab" href="#'+ sheetId +'" id="'+ sheetId +'">'+ sheetInfo.name +'</a></li>');
+        $("#add-sheet-btn").before(newLi);
+        addSheetTabMethod(sheetId);
+    }
 
     $("#add-sheet-btn").click(function(e) {
-        const length = $(this).siblings().length
-        const newLi = $('<li class="nav-item"><a class="nav-link" data-toggle="tab" href="#sheet'+ (length + 1) +'" id="sheet'+ (length + 1) +'">sheet'+ (length + 1) +'</a></li>')
-        const newId = "sheet"+ ( length + 1 )
-        $(this).before(newLi)
-        workbook.addNewSheet(newId);
-    })
- 
+        addNewSheetTab();
+    });
+
+    function addSheetTabMethod (sheetId) {
+        let id = "#" + sheetId;
+        $(id).dblclick(function () {
+            const oldName = $(id).text();
+            const newName = window.prompt("重命名sheet", oldName);
+            if (newName && workbook.renameSheet(oldName, newName)) {
+                $(id).text(newName);
+            }
+        });
+        $(id).click(function () {
+            const oldName = $(id).text();
+            workbook.selectSheet(oldName);
+        });
+    }
+
     $(document).on('click', ".nav-item", function(){
         const id = $(this).children().attr("ID")
         workbook.selectSheet(id, "sheet", "formula");
     })
 
     $("#aSave").click(function (e) {
-        var str = workbook.generateFile();
+        let str = workbook.generateFile();
         alert(str);
-        var fileStr = "data:text/plain;charset=utf-8," + str;
+        let fileStr = "data:text/plain;charset=utf-8," + str;
         $('#aSave').attr('href',fileStr);
     });
     $("#inputFile").change(function (e) {
-        for (var i = 0; i < this.files.length; i++) {
-            var file = this.files[i];
+        for (let i = 0; i < this.files.length; i++) {
+            let file = this.files[i];
             console.log(file);
-            var fr = new FileReader();
+            let fr = new FileReader();
             fr.readAsText(file);
             fr.onload = function () {
                 console.log(this.result);
@@ -184,11 +207,11 @@
     });
     function loadRemoteData (sheet, info) {
         if (sheet.remote && sheet.remote.length > 0) {
-            // var ref = "biz=personalize&table=训练计划创建情况&minDate=20181030&maxDate=20181031";
-            var url = "/api/stat?" + info.ref;
+            // let ref = "biz=personalize&table=训练计划创建情况&dateFrom=20181030&dateTo=20181031";
+            let url = "/api/stat?" + info.ref;
             $.get(url, function (jsonstr, status) {
                 console.log(jsonstr);
-                var data = JSON.parse(jsonstr);
+                let data = JSON.parse(jsonstr);
                 if (data.code != 0) {
                     alert("failed to load " + url);
                     return;
@@ -197,39 +220,56 @@
             });
         }
     }
+    $("#imgLoad").click(function () {
+        let obj = document.getElementById("modelLoad");;
+        SocialCalc.Keyboard.passThru = obj;
+        obj.focus();
+    });
+    $("#imgSave").click(function () {
+        let obj = document.getElementById("modelSaveToServer");;
+        SocialCalc.Keyboard.passThru = obj;
+        obj.focus();
+    });
     $("#buttonLoad").click(function() {
-        var ref = $("#inputRef").val();
+        let ref = $("#inputRef").val();
         if (!workbook.editor.range.hasrange) {
             alert("please select a range");
             return;
         }
-        var sheet = workbook.getCurrentSheet();
-        var info = workbook.addRemoteInfo(sheet, ref);
+        let sheet = workbook.getCurrentSheet();
+        let info = workbook.addRemoteInfo(sheet, ref);
         loadRemoteData(sheet, info);
         workbook.refresh();
     });
     function getValueFromQuery (name) {
-        var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
-        var r = window.location.search.substr(1).match(reg);
-        if(r!=null)return  unescape(r[2]); return null;
+        let reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+        let r = window.location.search.substr(1).match(reg);
+        return r != null ? decodeURIComponent(r[2]) : null;
     }
     function loadFileData (fileData) {
-        var json = JSON.parse(fileData);
-        for (var name in json) {
-            var sheet = workbook.addNewSheet(name, json[name]);
-            for (var j = 0; j < sheet.remote.length; ++j) {
-                loadRemoteData(sheet, sheet.remote[j]);
+        let list = JSON.parse(fileData);
+        let first = true;
+        for (let i = 0; i < list.length; ++i) {
+            let info = list[i];
+            let sheetInfo = workbook.addNewSheet(info.name, info.content, first);
+            addNewSheetTab(sheetInfo);
+            first = false;
+            for (let j = 0; j < sheetInfo.sheet.remote.length; ++j) {
+                loadRemoteData(sheetInfo.sheet, sheetInfo.sheet.remote[j]);
             }
         }
-        workbook.refresh();
+        if (!first) {
+            workbook.refresh();
+        }
     }
     $("#show-share-link").click(function () {
-        var link = window.location.origin + window.location.pathname + "?fileName=first.ss&owner=mabaiming";
-        $("#buttonVisitLink .modal-body").html(link)
+        let link = window.location.origin + window.location.pathname
+            + "?fileName=" + config.fileName + "&owner=" + config.owner;
+        $("#modelShareLink .modal-body").html(link)
     });
     $("#buttonSave").click(function () {
-        var fileName = $("#inputFileName").val();
-        var owner = $("#inputOwner").val();
+        let fileName = $("#inputFileName").val();
+        let owner = $("#inputOwner").val();
         if (!fileName) {
             alert("please input file name");
             return;
@@ -238,41 +278,51 @@
             alert("please owner name");
             return;
         }
-        var content = workbook.generateFile();
+        let content = workbook.generateFile();
         $.post("/api/file", {
                 fileName: fileName,
-                owner:"mabaiming",
+                owner: owner,
                 content: content
             }, function(jsonstr) {
             console.log(jsonstr);
-            var data = JSON.parse(jsonstr);
+            let data = JSON.parse(jsonstr);
             if (data.code != 0) {
-                alert("failed to load " + url);
+                alert("failed to load file: " + fileName + ", owner: " + owner);
                 return;
             }
             alert("OK");
+            config.fileName = fileName;
+            config.owner = owner;
         });
     });
     $(document).ready(function() {
-        var fileName = getValueFromQuery("fileName");
-        var owner = getValueFromQuery("owner");
+        $(".icon-btn").click(function () {
+            const command = $(this).attr("command");
+            const arg = $(this).attr("arg");
+            workbook.executeCommand(command, arg);
+        });
+        let fileName = getValueFromQuery("fileName");
+        let owner = getValueFromQuery("owner");
         if (!fileName || !owner) {
+            addNewSheetTab();
+            $("ul#nav-tabs").find("li:first-child").find("a").addClass("active show")
             return;
         }
         $.get("/api/file?fileName=" + fileName + "&owner=" + owner, function (jsonstr, status) {
             console.log(jsonstr);
-            var data = JSON.parse(jsonstr);
+            let data = JSON.parse(jsonstr);
             if (data.code != 0) {
                 alert("failed to load " + url);
                 return;
             }
-            var content = data.result.content;
+            let content = data.result.content;
             loadFileData(content);
             $("#inputFileName").val(fileName);
             $("#inputOwner").val(owner);
+            config.fileName = fileName;
+            config.owner = owner;
         });
     });
-
     $(".select-time").showCalendar();
 
 </script>

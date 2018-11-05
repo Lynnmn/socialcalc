@@ -7,20 +7,57 @@ if (!SocialCalc.TableEditor) {
     alert("SocialCalc TableEditor code module needed");
 }
 
-SocialCalc.Workbook = function() {
-    this.sheetInfoMap = {}; // name, sheet, context, editor, node
-    this.currentSheetName = null;
+SocialCalc.Workbook = function(parentId, formulaId) {
+    this.sheetInfoList = []; // name, sheet, context, editor, node
+    this.currentSheetIndex = 0;
     this.editor = null;
+    this.parentId = parentId;
+    this.formulaId = formulaId;
 
-    this.getCurrentSheet = function () {
-        return this.currentSheetName ? this.sheetInfoMap[this.currentSheetName].sheet : null;
+    this.generateSheetName = function () {
+        var map = {};
+        for (var i = 0; i < this.sheetInfoList.length; ++i) {
+            map[this.sheetInfoList[i].name] = 1;
+        }
+        var i = this.sheetInfoList.length + 1;
+        while (true) {
+            var name = "sheet" + i;
+            if (!map[name]) {
+                return name;
+            }
+            ++i;
+        }
     }
 
-    this.addNewSheet = function (name, str) {
-        var sheetInfo = this.sheetInfoMap[name];
+    this.getCurrentSheet = function () {
+        var info = this.sheetInfoList[this.currentSheetIndex];
+        return info ? info.sheet : null;
+    }
+
+    this.getIndexBySheetName = function (name) {
+        if (name) {
+            for (let i = 0; i < this.sheetInfoList.length; ++i) {
+                if (this.sheetInfoList[i].name == name) {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+
+    this.addNewSheet = function (name, str, selected) {
+        var sheetInfo = null;
+        if (!name) {
+            name = this.generateSheetName();
+        } else {
+            const i = this.getIndexBySheetName(name);
+            if (i >= 0) {
+                sheetInfo = this.sheetInfoList[i];
+            }
+        }
         if (sheetInfo) {
             sheetInfo.sheet.ParseSheetSave(str);
-            return sheetInfo.sheet;
+            return sheetInfo;
         }
         var sheet = new SocialCalc.Sheet();
         SocialCalc.Formula.SheetCache.sheets[name] = {
@@ -38,26 +75,68 @@ SocialCalc.Workbook = function() {
             sheet: sheet,
             context: context,
         };
-        this.sheetInfoMap[name] = sheetInfo;
-        return sheet;
+        this.sheetInfoList.push(sheetInfo);
+        if (selected || this.sheetInfoList.length == 1) {
+            this.selectSheet(name);
+        }
+        return sheetInfo;
+    }
+    
+    this.renameSheet = function (name, newName) {
+        const i = this.getIndexBySheetName(name);
+        if (i < 0) {
+            alert("sheet not exist: " + name);
+            return false;
+        }
+        const j = this.getIndexBySheetName(newName);
+        if (j >= 0) {
+            alert("repeated name: " + newName);
+            return false;
+        }
+        this.sheetInfoList[i].name = newName;
+        delete(SocialCalc.Formula.SheetCache.sheets[name]);
+        SocialCalc.Formula.SheetCache.sheets[newName] = { // TODO maybe there is a method to rename?
+            sheet: this.sheetInfoList[i].sheet,
+            name: newName
+        };
+        return true;
+    }
+
+    this.removeSheet = function (name) {
+        const i = this.getIndexBySheetName(name);
+        if (i < 0) {
+            return;
+        }
+        var sheetInfo = this.sheetInfoList[i];
+        delete(SocialCalc.Formula.SheetCache.sheets[name]);
+        this.sheetInfoList.splice(i, 1);
+        if (i == this.currentSheetIndex) {
+            if (this.sheetInfoList.length > 0) {
+                this.selectSheet(this.sheetInfoList[0].name);
+            }
+        }
     }
 
 
-    this.selectSheet = function (name, parentId, formulaId) {
-        var sheetInfo = this.sheetInfoMap[name];
+    this.selectSheet = function (name) {
+        var i = this.getIndexBySheetName(name);
+        if (i < 0) {
+            return;
+        }
+        var sheetInfo = this.sheetInfoList[i];
         if (!sheetInfo) {
             alert("no such sheet: " + name);
             return;
         }
         var editor = new SocialCalc.TableEditor(sheetInfo.context);
-        var node = editor.CreateTableEditor(document.body.clientWidth - 20, 850); // document.body.clientHeight);
-        var inputbox = new SocialCalc.InputBox(document.getElementById(formulaId), editor);
-        var parentNode = document.getElementById(parentId);
+        var node = editor.CreateTableEditor(document.body.clientWidth - 20, document.body.clientHeight - $("#first-part-actions").height() - $("#nav-tabs").height() - 10 ); // document.body.clientHeight);
+        var inputbox = new SocialCalc.InputBox(document.getElementById(this.formulaId), editor);
+        var parentNode = document.getElementById(this.parentId);
         for (child=parentNode.firstChild; child!=null; child=parentNode.firstChild) {
             parentNode.removeChild(child);
         }
         parentNode.appendChild(node);
-        this.currentSheetName = name;
+        this.currentSheetIndex = i;
         this.editor = editor;
         editor.EditorScheduleSheetCommands("redisplay", true, false);
     }
@@ -67,14 +146,15 @@ SocialCalc.Workbook = function() {
     }
 
     this.generateFile = function() {
-        var json = {};
-        for (var name in this.sheetInfoMap) {
-            var sheetInfo = this.sheetInfoMap[name];
-            var sheet = sheetInfo.sheet;
-            var str = sheet.CreateSheetSave();
-            json[name] = str;
+        var result = [];
+        for (let i = 0; i < this.sheetInfoList.length; ++i) {
+            var sheetInfo = this.sheetInfoList[i];
+            result.push({
+                name: sheetInfo.name,
+                content: sheetInfo.sheet.CreateSheetSave()
+            });
         }
-        return JSON.stringify(json);
+        return JSON.stringify(result);
     }
 
     this.addRemoteInfo = function (sheet, ref) {
@@ -113,5 +193,33 @@ SocialCalc.Workbook = function() {
                 }
             }
         }
+    }
+
+    this.executeCommand = function(combostr, sstr) {
+        var eobj = this.editor;
+
+        var str = {};
+        str.P = "%";
+        str.N = "\n"
+        if (eobj.range.hasrange) {
+            str.R = SocialCalc.crToCoord(eobj.range.left, eobj.range.top)+
+                ":"+SocialCalc.crToCoord(eobj.range.right, eobj.range.bottom);
+            str.C = str.R;
+            str.W = SocialCalc.rcColname(eobj.range.left) + ":" + SocialCalc.rcColname(eobj.range.right);
+        }
+        else {
+            str.C = eobj.ecell.coord;
+            str.R = eobj.ecell.coord+":"+eobj.ecell.coord;
+            str.W = SocialCalc.rcColname(SocialCalc.coordToCr(eobj.ecell.coord).col);
+        }
+        str.S = sstr;
+        combostr = combostr.replace(/%C/g, str.C);
+        combostr = combostr.replace(/%R/g, str.R);
+        combostr = combostr.replace(/%N/g, str.N);
+        combostr = combostr.replace(/%S/g, str.S);
+        combostr = combostr.replace(/%W/g, str.W);
+        combostr = combostr.replace(/%P/g, str.P);
+
+        eobj.EditorScheduleSheetCommands(combostr, true, false);
     }
 }
