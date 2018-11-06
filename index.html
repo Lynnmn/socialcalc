@@ -4,11 +4,11 @@
     <title>训练计划数据报表</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.1.0/css/bootstrap.min.css">
-    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="./dist/bootstrap.min.css">
+    <script src="./dist/jquery.min.js"></script>
     <script src="./dist/jquery.calendar.js"></script>
-    <script src="https://cdn.staticfile.org/popper.js/1.12.5/umd/popper.min.js"></script>
-    <script src="https://cdn.staticfile.org/twitter-bootstrap/4.1.0/js/bootstrap.min.js"></script>
+    <script src="./dist/popper.min.js"></script>
+    <script src="./dist/bootstrap.min.js"></script>
     <script type="text/javascript" src="js/socialcalcconstants.js"></script>
     <script type="text/javascript" src="js/socialcalc-3.js"></script>
     <script type="text/javascript" src="js/socialcalctableeditor.js"></script>
@@ -37,6 +37,7 @@
             <a href="" download="a.txt" id="aSave">
                 <img class="icon-btn" src="./images/download.png" title="下载excel文档">
             </a>
+            <button id="buttonSendMail">sendMail</button>
         </div>
         
         <div>
@@ -189,11 +190,11 @@
     $("#inputFile").change(function (e) {
         for (let i = 0; i < this.files.length; i++) {
             let file = this.files[i];
-            console.log(file);
+            // console.log(file);
             let fr = new FileReader();
             fr.readAsText(file);
             fr.onload = function () {
-                console.log(this.result);
+                // console.log(this.result);
                 loadFileData(this.result);
             }
         }
@@ -203,7 +204,7 @@
             // let ref = "biz=personalize&table=训练计划创建情况&dateFrom=20181030&dateTo=20181031";
             let url = "/api/stat?" + info.ref;
             $.get(url, function (jsonstr, status) {
-                console.log(jsonstr);
+                // console.log(jsonstr);
                 let data = JSON.parse(jsonstr);
                 if (data.code != 0) {
                     alert("failed to load " + url);
@@ -277,7 +278,7 @@
                 owner: owner,
                 content: content
             }, function(jsonstr) {
-            console.log(jsonstr);
+            // console.log(jsonstr);
             let data = JSON.parse(jsonstr);
             if (data.code != 0) {
                 alert("failed to load file: " + fileName + ", owner: " + owner);
@@ -288,7 +289,51 @@
             config.owner = owner;
         });
     });
-    $(document).ready(function() {
+    $("#buttonSave").click(function () {
+        let fileName = $("#inputFileName").val();
+        let owner = $("#inputOwner").val();
+        if (!fileName) {
+            alert("please input file name");
+            return;
+        }
+        if (!owner) {
+            alert("please owner name");
+            return;
+        }
+        let content = workbook.generateFile();
+        $.post("/api/file", {
+            fileName: fileName,
+            owner: owner,
+            content: content
+        }, function(jsonstr) {
+            // console.log(jsonstr);
+            let data = JSON.parse(jsonstr);
+            if (data.code != 0) {
+                alert("failed to load file: " + fileName + ", owner: " + owner);
+                return;
+            }
+            alert("OK");
+            config.fileName = fileName;
+            config.owner = owner;
+        });
+    });
+    function sendMail () {
+        const info = workbook.sheetInfoList[workbook.currentSheetIndex];
+        let html = info.context.RenderSheetForOutlook();
+        $.post("/api/mail", {
+            title: "test excelt html mail",
+            to: "95813422@qq.com",
+            body: html
+        }, function(jsonstr) {
+            // console.log(jsonstr);
+            // TODO
+        });
+        return html; // TODO remove this
+    }
+    $("#buttonSendMail").click(function () {
+        sendMail();
+    });
+    window.onload = function () {
         $(".icon-btn").click(function () {
             const command = $(this).attr("command");
             const arg = $(this).attr("arg");
@@ -304,21 +349,27 @@
             $("ul#nav-tabs").find("li:first-child").find("a").addClass("active show")
             return;
         }
-        $.get("/api/file?fileName=" + fileName + "&owner=" + owner, function (jsonstr, status) {
-            console.log(jsonstr);
-            let data = JSON.parse(jsonstr);
-            if (data.code != 0) {
-                alert("failed to load " + url);
-                return;
-            }
-            let content = data.result.content;
-            loadFileData(content);
-            $("#inputFileName").val(fileName);
-            $("#inputOwner").val(owner);
-            config.fileName = fileName;
-            config.owner = owner;
+        //fetch("/api/file?fileName=" + fileName + "&owner=" + owner)
+        //    .then(function (response) {
+           $.get("/api/file?fileName=" + fileName + "&owner=" + owner, function (jsonstr, status) {
+                // console.log(jsonstr);
+                let data = JSON.parse(jsonstr);
+                if (data.code != 0) {
+                    alert("failed to load " + url);
+                    return;
+                }
+                let content = data.result.content;
+                loadFileData(content);
+                $("#inputFileName").val(fileName);
+                $("#inputOwner").val(owner);
+                config.fileName = fileName;
+                config.owner = owner;
+                let mail = getValueFromQuery("mail");
+                if (mail) {
+                    sendMail();
+                }
         });
-    });
+    }
     $(".select-time").showCalendar();
 
 </script>

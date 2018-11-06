@@ -4109,6 +4109,7 @@ SocialCalc.RenderContext.prototype.CoordInPane = function(coord, rowpane, colpan
 SocialCalc.RenderContext.prototype.CellInPane = function(row, col, rowpane, colpane) {return SocialCalc.CellInPane(this, row, col, rowpane, colpane);};
 SocialCalc.RenderContext.prototype.InitializeTable = function(tableobj) {SocialCalc.InitializeTable(this, tableobj);};
 SocialCalc.RenderContext.prototype.RenderSheet = function(oldtable, linkstyle) {return SocialCalc.RenderSheet(this, oldtable, linkstyle);};
+SocialCalc.RenderContext.prototype.RenderSheetForOutlook = function() {return SocialCalc.RenderSheetForOutlook(this);};
 SocialCalc.RenderContext.prototype.RenderColGroup = function() {return SocialCalc.RenderColGroup(this);};
 SocialCalc.RenderContext.prototype.RenderColHeaders = function() {return SocialCalc.RenderColHeaders(this);};
 SocialCalc.RenderContext.prototype.RenderSizingRow = function() {return SocialCalc.RenderSizingRow(this);};
@@ -5816,3 +5817,76 @@ SocialCalc.SetConvertedCell = function(sheet, cr, rawvalue) {
 
    }
 
+SocialCalc.RenderSheetForOutlook = function(context) {
+    if (context.sheetobj.changedrendervalues) {
+        context.needcellskip = true;
+        context.needprecompute = true;
+        context.sheetobj.changedrendervalues = false;
+    }
+    if (context.needcellskip) {
+        context.CalculateCellSkipData();
+    }
+    if (context.needprecompute) {
+        context.PrecomputeSheetFontsAndLayouts();
+    }
+
+    context.CalculateColWidthData(); // always make sure col width values are up to date
+
+    const sheetobj = context.sheetobj;
+    var sheetattribs=sheetobj.attribs;
+    const maxrow = sheetobj.attribs.lastrow;
+    const maxcol = sheetobj.attribs.lastcol;
+    let html = '<table cellspacing="0"  border="1" style=" border:1px solid rgb(198,198,198)">';
+    for (let r = 1; r <= maxrow; ++r) {
+        html += '<tr>';
+        for (let c = 1; c <= maxcol; ++c) {
+            let coord = SocialCalc.crToCoord(c, r);
+            let cell = sheetobj.cells[coord];
+            if (!cell) {
+                html += '<td>&nbsp;</td>';
+                continue;
+            }
+            let style = "";
+            let num=cell.color || sheetattribs.defaultcolor;
+            if (num) {
+                style += ' color:' + sheetobj.colors[cell.color] + ';';
+            }
+            num=cell.bgcolor || sheetattribs.defaultbgcolor;
+            if (num) {
+                style += ' background-color:' + sheetobj.colors[cell.color] + ';';
+            }
+            let tdstyle = "";
+            num = cell.cellformat;
+            if (num) {
+                tdstyle += ' align="' + sheetobj.cellformats[num] + '"';
+            } else {
+                let t = cell.valuetype.charAt(0);
+                if (t=="t") {
+                    num = sheetattribs.defaulttextformat;
+                    tdstyle += ' align="' + sheetobj.cellformats[num] + '"';
+                } else if (t="n") {
+                    num = sheetattribs.defaultnontextformat;
+                    if (num) {
+                        tdstyle += ' align="' + sheetobj.cellformats[num] + '"';
+                    } else {
+                        tdstyle += ' align="right"';
+                    }
+                } else {
+                    tdstyle += ' align="left"';
+                }
+            }
+            if (!cell.displaystring) {
+                cell.displaystring = SocialCalc.FormatValueForDisplay(sheetobj, cell.datavalue, coord, context.defaultlinkstyle);
+            }
+            let displayValue = cell.displaystring ? cell.displaystring : cell.datavalue;
+            if (style) {
+                html += '<td' + tdstyle + '><span style="' + style + '">' + displayValue + '</span></td>';
+            } else {
+                html += '<td' + tdstyle + '>' + displayValue + '</td>';
+            }
+        }
+        html += '</tr>';
+    }
+    html += "</table>";
+    return html;
+}
