@@ -37,7 +37,7 @@
             <a href="" download="a.txt" id="aSave">
                 <img class="icon-btn" src="./images/download.png" title="下载excel文档">
             </a>
-            <button id="buttonSendMail">sendMail</button>
+            <img class="icon-btn" src="./images/email.png" title="send mail" data-toggle="modal" data-target="#modelMail" id="imgSendMail">
         </div>
         
         <div>
@@ -109,6 +109,31 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
                     <button type="button" class="btn btn-primary" id="buttonSave">保存</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+
+    <div class="modal fade" id="modelMail" tabindex="-1" role="dialog" aria-labelledby="myModalLabel3" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span class="modal-title" id="myModalLabel3">
+                        填写邮件信息
+                    </span>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input placeholder="收件人:aaa@qq.com,bbb@qq.com" id="inputTo" value="95813422@qq.com"/>
+                    <input placeholder="抄送:aaa@qq.com,bbb@qq.com" id="inputCc"/>
+                    <input placeholder="密送:aaa@qq.com,bbb@qq.com" id="inputBcc"/>
+                    <input placeholder="title:" id="inputTitle" value="test for outlook"/>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="buttonSendMail">保存</button>
                 </div>
             </div><!-- /.modal-content -->
         </div><!-- /.modal -->
@@ -215,15 +240,21 @@
         }
     }
     $("#imgLoad").click(function () {
-        let obj = document.getElementById("modelLoad");;
+        let obj = document.getElementById("modelLoad");
         SocialCalc.Keyboard.passThru = obj;
         obj.focus();
     });
     $("#imgSave").click(function () {
-        let obj = document.getElementById("modelSaveToServer");;
+        let obj = document.getElementById("modelSaveToServer");
         SocialCalc.Keyboard.passThru = obj;
         obj.focus();
     });
+    $("#imgSendMail").click(function () {
+        let obj = document.getElementById("modelMail");
+        SocialCalc.Keyboard.passThru = obj;
+        obj.focus();
+    });
+
     $("#buttonLoad").click(function() {
         let ref = $("#inputRef").val();
         if (!workbook.editor.range.hasrange) {
@@ -289,40 +320,22 @@
             config.owner = owner;
         });
     });
-    $("#buttonSave").click(function () {
-        let fileName = $("#inputFileName").val();
-        let owner = $("#inputOwner").val();
-        if (!fileName) {
-            alert("please input file name");
-            return;
-        }
-        if (!owner) {
-            alert("please owner name");
-            return;
-        }
-        let content = workbook.generateFile();
-        $.post("/api/file", {
-            fileName: fileName,
-            owner: owner,
-            content: content
-        }, function(jsonstr) {
-            // console.log(jsonstr);
-            let data = JSON.parse(jsonstr);
-            if (data.code != 0) {
-                alert("failed to load file: " + fileName + ", owner: " + owner);
-                return;
-            }
-            alert("OK");
-            config.fileName = fileName;
-            config.owner = owner;
-        });
-    });
     function sendMail () {
-        const info = workbook.sheetInfoList[workbook.currentSheetIndex];
-        let html = info.context.RenderSheetForOutlook();
+        let html = "";
+        for (let i = 0; i < workbook.sheetInfoList.length; ++i) {
+            let info = workbook.sheetInfoList[i];
+            html += info.name + "<br/>";
+            html += info.context.RenderSheetForOutlook() + "<br/>";
+        }
+        let to = $("#inputTo").val();
+        let cc = $("#inputCc").val();
+        let bcc = $("#inputBcc").val();
+        let title = $("#inputTitle").val();
         $.post("/api/mail", {
-            title: "test excelt html mail",
-            to: "95813422@qq.com",
+            title: title,
+            to: to,
+            cc: cc,
+            bcc: bcc,
             body: html
         }, function(jsonstr) {
             // console.log(jsonstr);
@@ -335,9 +348,11 @@
     });
     window.onload = function () {
         $(".icon-btn").click(function () {
-            const command = $(this).attr("command");
-            const arg = $(this).attr("arg");
-            workbook.executeCommand(command, arg);
+            let command = $(this).attr("command");
+            let arg = $(this).attr("arg");
+            if (command) {
+                workbook.executeCommand(command, arg);
+            }
         });
         $(window).resize(function () {
             workbook.resize();
@@ -366,7 +381,8 @@
                 config.owner = owner;
                 let mail = getValueFromQuery("mail");
                 if (mail) {
-                    sendMail();
+                    // TODD read from file
+                    // sendMail();
                 }
         });
     }
