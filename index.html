@@ -303,11 +303,22 @@
             alert("please owner name");
             return;
         }
+        let to = $("#inputTo").val();
+        let cc = $("#inputCc").val();
+        let bcc = $("#inputBcc").val();
+        let title = $("#inputTitle").val();
+        let mailInfo = {
+            to: to,
+            cc: cc,
+            bcc: bcc,
+            title: title
+        }
         let content = workbook.generateFile();
         $.post("/api/file", {
                 fileName: fileName,
                 owner: owner,
-                content: content
+                content: content,
+                mailInfo: JSON.stringify(mailInfo),
             }, function(jsonstr) {
             // console.log(jsonstr);
             let data = JSON.parse(jsonstr);
@@ -321,16 +332,20 @@
         });
     });
     function sendMail () {
+        let to = $("#inputTo").val();
+        let cc = $("#inputCc").val();
+        let bcc = $("#inputBcc").val();
+        let title = $("#inputTitle").val();
+        if (!to && !cc && !bcc && !title) {
+            console.log("invalid mail info, to:" + to + ", cc:" + cc + ", bcc:" + bcc + ", title:" + title);
+            return;
+        }
         let html = "";
         for (let i = 0; i < workbook.sheetInfoList.length; ++i) {
             let info = workbook.sheetInfoList[i];
             html += info.name + "<br/>";
             html += info.context.RenderSheetForOutlook() + "<br/>";
         }
-        let to = $("#inputTo").val();
-        let cc = $("#inputCc").val();
-        let bcc = $("#inputBcc").val();
-        let title = $("#inputTitle").val();
         $.post("/api/mail", {
             title: title,
             to: to,
@@ -338,15 +353,13 @@
             bcc: bcc,
             body: html
         }, function(jsonstr) {
-            // console.log(jsonstr);
-            // TODO
+            console.log(jsonstr);
         });
-        return html; // TODO remove this
     }
     $("#buttonSendMail").click(function () {
         sendMail();
     });
-    window.onload = function () {
+    $(document).ready(function () {
         $(".icon-btn").click(function () {
             let command = $(this).attr("command");
             let arg = $(this).attr("arg");
@@ -364,28 +377,32 @@
             $("ul#nav-tabs").find("li:first-child").find("a").addClass("active show")
             return;
         }
-        //fetch("/api/file?fileName=" + fileName + "&owner=" + owner)
-        //    .then(function (response) {
-           $.get("/api/file?fileName=" + fileName + "&owner=" + owner, function (jsonstr, status) {
-                // console.log(jsonstr);
-                let data = JSON.parse(jsonstr);
-                if (data.code != 0) {
-                    alert("failed to load " + url);
-                    return;
-                }
-                let content = data.result.content;
-                loadFileData(content);
-                $("#inputFileName").val(fileName);
-                $("#inputOwner").val(owner);
-                config.fileName = fileName;
-                config.owner = owner;
-                let mail = getValueFromQuery("mail");
-                if (mail) {
-                    // TODD read from file
-                    // sendMail();
-                }
+        $.get("/api/file?fileName=" + fileName + "&owner=" + owner, function (jsonstr, status) {
+            // console.log(jsonstr);
+            let data = JSON.parse(jsonstr);
+            if (data.code != 0) {
+                alert("failed to load " + url);
+                return;
+            }
+            let content = data.result.content;
+            loadFileData(content);
+            $("#inputFileName").val(fileName);
+            $("#inputOwner").val(owner);
+            config.fileName = fileName;
+            config.owner = owner;
+            if (data.result.mailInfo) {
+                config.mailInfo = JSON.parse(data.result.mailInfo);
+                $("#inputTo").val(config.mailInfo.to);
+                $("#inputCc").val(config.mailInfo.cc);
+                $("#inputBcc").val(config.mailInfo.bcc);
+                $("#inputTitle").val(config.mailInfo.title);
+            }
+            let mail = getValueFromQuery("mail");
+            if (mail) {
+                sendMail();
+            }
         });
-    }
+    });
     $(".select-time").showCalendar();
 
 </script>

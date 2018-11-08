@@ -135,8 +135,8 @@ SocialCalc.Workbook = function(parentId, formulaId) {
             alert("no such sheet: " + name);
             return;
         }
-        var editor = new SocialCalc.TableEditor(sheetInfo.context);
-        const size = caclEditorSize();
+        let editor = new SocialCalc.TableEditor(sheetInfo.context);
+        let size = caclEditorSize();
         var node = editor.CreateTableEditor(size.width, size.height);
         var inputbox = new SocialCalc.InputBox(document.getElementById(this.formulaId), editor);
         var parentNode = document.getElementById(this.parentId);
