@@ -190,7 +190,7 @@
         let id = "#" + sheetId;
         $(id).dblclick(function () {
             const oldName = $(id).text();
-            const newName = window.prompt("重命名sheet", oldName);
+            const newName = window.prompt("重命名sheet: " + oldName, oldName);
             if (newName && workbook.renameSheet(oldName, newName)) {
                 $(id).text(newName);
             }
