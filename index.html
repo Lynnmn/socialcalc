@@ -27,17 +27,17 @@
         <div class="btn-group btn-group-sm">
             <img class="icon-btn" src="./images/save.png" title="保存至服务器" data-toggle="modal" data-target="#modelSaveToServer" id="imgSave">
             <label class="input-file">
-                <input type="file" name="inputFile" id="inputFile" value="" multiple="multiple"/>
+                <input type="file" name="inputLocalFile" id="inputLocalFile" value="" multiple="multiple"/>
                 <img class="icon-btn" src="./images/input_file.png" title="选择文件" >
             </label>
             <img class="icon-btn" src="./images/import.png" title="导入远程文档" data-toggle="modal" data-target="#modelLoad" id="imgLoad">
             <img class="icon-btn" src="./images/share.png" title="分享链接" data-toggle="modal" data-target="#modelShareLink" id="show-share-link" >
     
             <div class="action-btns"></div>
-            <a href="" download="a.txt" id="aSave">
+            <a href="" download="a.txt" id="aDownloadFile">
                 <img class="icon-btn" src="./images/download.png" title="下载excel文档">
             </a>
-            <img class="icon-btn" src="./images/email.png" title="send mail" data-toggle="modal" data-target="#modelMail" id="imgSendMail">
+            <img class="icon-btn" src="./images/email.png" title="send mail" data-toggle="modal" data-target="#modelMail" id="imgSetMailInfo">
         </div>
         
         <div>
@@ -108,7 +108,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                    <button type="button" class="btn btn-primary" id="buttonSave">保存</button>
+                    <button type="button" class="btn btn-primary" id="buttonSaveFile">保存</button>
                 </div>
             </div><!-- /.modal-content -->
         </div><!-- /.modal -->
@@ -126,14 +126,34 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <input placeholder="收件人:aaa@qq.com,bbb@qq.com" id="inputTo" value="95813422@qq.com"/>
-                    <input placeholder="抄送:aaa@qq.com,bbb@qq.com" id="inputCc"/>
-                    <input placeholder="密送:aaa@qq.com,bbb@qq.com" id="inputBcc"/>
-                    <input placeholder="title:" id="inputTitle" value="test for outlook"/>
+                    <div>
+                        <label>收件列表</label>
+                        <input placeholder="收件人:aaa@qq.com,bbb@qq.com" id="inputTo" value="95813422@qq.com"/>
+                    </div>
+                    <div>
+                        <label>抄送列表</label>
+                        <input placeholder="抄送:aaa@qq.com,bbb@qq.com" id="inputCc"/>
+                    </div>
+                    <div>
+                        <label>密送列表</label>
+                        <input placeholder="密送:aaa@qq.com,bbb@qq.com" id="inputBcc"/>
+                    </div>
+                    <div>
+                        <label>邮件标题</label>
+                        <input placeholder="title:" id="inputTitle" value="test for outlook"/>
+                    </div>
+                    <div>
+                        <label>开始时间</label>
+                        <input type="datetime-local" id="inputDateTime" value="2018-11-01T15:00:00"/>
+                    </div>
+                    <div>
+                        <label>每隔几天</label>
+                        <input type="number" id="inputPeriod" value="1"/>
+                    </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                    <button type="button" class="btn btn-primary" id="buttonSendMail">保存</button>
+                    <button type="button" class="btn btn-primary" id="buttonSaveMailInfo" data-dismiss="modal">保存</button>
+                    <button type="button" class="btn btn-primary" id="buttonSendMail" data-dismiss="modal">发送</button>
                 </div>
             </div><!-- /.modal-content -->
         </div><!-- /.modal -->
@@ -154,11 +174,37 @@
     </div -->
 </div>
 <script>
+    Date.prototype.format = function(fmt) {
+        var o = {
+            "M+" : this.getMonth()+1,                 //月份
+            "d+" : this.getDate(),                    //日
+            "h+" : this.getHours(),                   //小时
+            "m+" : this.getMinutes(),                 //分
+            "s+" : this.getSeconds(),                 //秒
+            "q+" : Math.floor((this.getMonth()+3)/3), //季度
+            "S"  : this.getMilliseconds()             //毫秒
+        };
+        if(/(y+)/.test(fmt)) {
+            fmt=fmt.replace(RegExp.$1, (this.getFullYear()+"").substr(4 - RegExp.$1.length));
+        }
+        for(var k in o) {
+            if(new RegExp("("+ k +")").test(fmt)){
+                fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));
+            }
+        }
+        return fmt;
+    }
+
     let workbook = new SocialCalc.Workbook("sheet", "formula");
     let sheetIdMap = {};
     let config = {
         fileName: "",
         owner: "",
+        today: "",
+        mailInfo: {
+            period: 1,
+            startTime: new Date().getTime(),
+        }
     };
     function generateSheetId () {
         let i = 1;
@@ -206,30 +252,30 @@
         workbook.selectSheet(id, "sheet", "formula");
     })
 
-    $("#aSave").click(function (e) {
+    $("#aDownloadFile").click(function (e) {
         let str = workbook.generateFile();
         alert(str);
         let fileStr = "data:text/plain;charset=utf-8," + str;
-        $('#aSave').attr('href',fileStr);
+        $('#aDownloadFile').attr('download', config.fileName || "未命名文件");
+        $('#aDownloadFile').attr('href',fileStr);
     });
-    $("#inputFile").change(function (e) {
+    $("#inputLocalFile").change(function (e) {
         for (let i = 0; i < this.files.length; i++) {
             let file = this.files[i];
-            // console.log(file);
             let fr = new FileReader();
             fr.readAsText(file);
             fr.onload = function () {
-                // console.log(this.result);
-                loadFileData(this.result);
+                loadFileData(this.result, config.today);
             }
         }
     });
-    function loadRemoteData (sheet, info) {
+    function loadRemoteData (sheet, info, today) {
         if (sheet.remote && sheet.remote.length > 0) {
-            // let ref = "biz=personalize&table=训练计划创建情况&dateFrom=20181030&dateTo=20181031";
             let url = "/api/stat?" + info.ref;
+            if (today) {
+                url += "&today=" + today;
+            }
             $.get(url, function (jsonstr, status) {
-                // console.log(jsonstr);
                 let data = JSON.parse(jsonstr);
                 if (data.code != 0) {
                     alert("failed to load " + url);
@@ -245,54 +291,13 @@
         obj.focus();
     });
     $("#imgSave").click(function () {
+        $("#inputFileName").val(config.fileName);
+        $("#inputOwner").val(config.owner);
         let obj = document.getElementById("modelSaveToServer");
         SocialCalc.Keyboard.passThru = obj;
         obj.focus();
     });
-    $("#imgSendMail").click(function () {
-        let obj = document.getElementById("modelMail");
-        SocialCalc.Keyboard.passThru = obj;
-        obj.focus();
-    });
-
-    $("#buttonLoad").click(function() {
-        let ref = $("#inputRef").val();
-        if (!workbook.editor.range.hasrange) {
-            alert("please select a range");
-            return;
-        }
-        let sheet = workbook.getCurrentSheet();
-        let info = workbook.addRemoteInfo(sheet, ref);
-        loadRemoteData(sheet, info);
-        workbook.refresh();
-    });
-    function getValueFromQuery (name) {
-        let reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
-        let r = window.location.search.substr(1).match(reg);
-        return r != null ? decodeURIComponent(r[2]) : null;
-    }
-    function loadFileData (fileData) {
-        let list = JSON.parse(fileData);
-        let first = true;
-        for (let i = 0; i < list.length; ++i) {
-            let info = list[i];
-            let sheetInfo = workbook.addNewSheet(info.name, info.content, first);
-            addNewSheetTab(sheetInfo);
-            first = false;
-            for (let j = 0; j < sheetInfo.sheet.remote.length; ++j) {
-                loadRemoteData(sheetInfo.sheet, sheetInfo.sheet.remote[j]);
-            }
-        }
-        if (!first) {
-            workbook.refresh();
-        }
-    }
-    $("#show-share-link").click(function () {
-        let link = window.location.origin + window.location.pathname
-            + "?fileName=" + config.fileName + "&owner=" + config.owner;
-        $("#modelShareLink .modal-body").html(link)
-    });
-    $("#buttonSave").click(function () {
+    $("#buttonSaveFile").click(function () {
         let fileName = $("#inputFileName").val();
         let owner = $("#inputOwner").val();
         if (!fileName) {
@@ -303,23 +308,13 @@
             alert("please owner name");
             return;
         }
-        let to = $("#inputTo").val();
-        let cc = $("#inputCc").val();
-        let bcc = $("#inputBcc").val();
-        let title = $("#inputTitle").val();
-        let mailInfo = {
-            to: to,
-            cc: cc,
-            bcc: bcc,
-            title: title
-        }
         let content = workbook.generateFile();
         $.post("/api/file", {
-                fileName: fileName,
-                owner: owner,
-                content: content,
-                mailInfo: JSON.stringify(mailInfo),
-            }, function(jsonstr) {
+            fileName: fileName,
+            owner: owner,
+            content: content,
+            mailInfo: JSON.stringify(config.emailInfo),
+        }, function(jsonstr) {
             // console.log(jsonstr);
             let data = JSON.parse(jsonstr);
             if (data.code != 0) {
@@ -331,34 +326,125 @@
             config.owner = owner;
         });
     });
-    function sendMail () {
+    $("#imgSetMailInfo").click(function () {
+        $("#inputTo").val(config.mailInfo.to);
+        $("#inputCc").val(config.mailInfo.cc);
+        $("#inputBcc").val( config.mailInfo.bcc);
+        $("#inputTitle").val(config.mailInfo.title);
+        $("#inputPeriod").val(config.mailInfo.period);
+        let d = new Date(config.mailInfo.startTime);
+        $("#inputDateTime").val(d.format("yyyy-MM-ddThh:mm:ss"));
+        let obj = document.getElementById("modelMail");
+        SocialCalc.Keyboard.passThru = obj;
+        obj.focus();
+    });
+    $("#buttonSaveMailInfo").click(function () {
+        config.mailInfo.to = $("#inputTo").val();
+        config.mailInfo.cc = $("#inputCc").val();
+        config.mailInfo.bcc = $("#inputBcc").val();
+        config.mailInfo.title = $("#inputTitle").val();
+        config.mailInfo.startTime = new Date($("#inputDateTime").val()).getTime();
+        config.mailInfo.period = $("#inputPeriod").val();
+    });
+    $("#buttonSendMail").click(function () {
         let to = $("#inputTo").val();
         let cc = $("#inputCc").val();
         let bcc = $("#inputBcc").val();
         let title = $("#inputTitle").val();
-        if (!to && !cc && !bcc && !title) {
-            console.log("invalid mail info, to:" + to + ", cc:" + cc + ", bcc:" + bcc + ", title:" + title);
+        if (!title) {
+            alert("请设置邮件标题");
             return;
         }
-        let html = "";
-        for (let i = 0; i < workbook.sheetInfoList.length; ++i) {
-            let info = workbook.sheetInfoList[i];
-            html += info.name + "<br/>";
-            html += info.context.RenderSheetForOutlook() + "<br/>";
+        if (!to && !cc && !bcc) {
+            alert("请设置至少一个收件人");
+            return;
+        }
+        let html = workbook.getHtmlForOutlook();
+        sendMail(to, cc, bcc, title, html);
+    });
+
+    $("#buttonLoad").click(function() {
+        let ref = $("#inputRef").val();
+        if (!workbook.editor.range.hasrange) {
+            alert("please select a range");
+            return;
+        }
+        let sheet = workbook.getCurrentSheet();
+        let info = workbook.addRemoteInfo(sheet, ref);
+        loadRemoteData(sheet, info, config.today);
+        workbook.refresh();
+    });
+    function getValueFromQuery (name) {
+        let reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+        let r = window.location.search.substr(1).match(reg);
+        return r != null ? decodeURIComponent(r[2]) : null;
+    }
+    function loadFileData (fileData, today) {
+        let list = JSON.parse(fileData);
+        let first = true;
+        for (let i = 0; i < list.length; ++i) {
+            let info = list[i];
+            let sheetInfo = workbook.addNewSheet(info.name, info.content, first);
+            addNewSheetTab(sheetInfo);
+            first = false;
+            for (let j = 0; j < sheetInfo.sheet.remote.length; ++j) {
+                loadRemoteData(sheetInfo.sheet, sheetInfo.sheet.remote[j], today);
+            }
+        }
+        if (!first) {
+            workbook.refresh();
+        }
+    }
+    $("#show-share-link").click(function () {
+        let link = window.location.origin + window.location.pathname
+            + "?fileName=" + config.fileName + "&owner=" + config.owner;
+        $("#modelShareLink .modal-body").html(link)
+    });
+
+    function sendMail (to, cc, bcc, title, html) {
+        if (!title) {
+            alert("请设置邮件标题");
+            return;
+        }
+        if (!to && !cc && !bcc) {
+            alert("请设置至少一个收件人");
+            return;
         }
         $.post("/api/mail", {
-            title: title,
-            to: to,
-            cc: cc,
-            bcc: bcc,
+            title: config.mailInfo.title,
+            to: config.mailInfo.to,
+            cc: config.mailInfo.cc,
+            bcc: config.mailInfo.bcc,
             body: html
         }, function(jsonstr) {
             console.log(jsonstr);
         });
     }
-    $("#buttonSendMail").click(function () {
-        sendMail();
-    });
+    function initFromUrlParam (fileName, owner, today, mail) {
+        $.get("/api/file?fileName=" + fileName + "&owner=" + owner, function (jsonstr, status) {
+            // console.log(jsonstr);
+            let data = JSON.parse(jsonstr);
+            if (data.code != 0) {
+                alert("failed to load " + url);
+                return;
+            }
+            config.fileName = fileName;
+            config.owner = owner;
+            if (today) {
+                config.today = today;
+            }
+            if (data.result.mailInfo) {
+                config.mailInfo = JSON.parse(data.result.mailInfo);
+            }
+            let content = data.result.content;
+            loadFileData(content, today);
+            if (mail) {
+                let mailInfo = config.mailInfo;
+                let html = workbook.getHtmlForOutlook();
+                sendMail(mailInfo.to, mailInfo.cc, mailInfo.bcc, mailInfo.title, html);
+            }
+        });
+    }
     $(document).ready(function () {
         $(".icon-btn").click(function () {
             let command = $(this).attr("command");
@@ -372,36 +458,14 @@
         });
         let fileName = getValueFromQuery("fileName");
         let owner = getValueFromQuery("owner");
+        let mail = getValueFromQuery("mail");
+        let today = getValueFromQuery("today");
         if (!fileName || !owner) {
             addNewSheetTab();
-            $("ul#nav-tabs").find("li:first-child").find("a").addClass("active show")
-            return;
+            $("ul#nav-tabs").find("li:first-child").find("a").addClass("active show");
+        } else {
+            initFromUrlParam(fileName, owner, today, mail);
         }
-        $.get("/api/file?fileName=" + fileName + "&owner=" + owner, function (jsonstr, status) {
-            // console.log(jsonstr);
-            let data = JSON.parse(jsonstr);
-            if (data.code != 0) {
-                alert("failed to load " + url);
-                return;
-            }
-            let content = data.result.content;
-            loadFileData(content);
-            $("#inputFileName").val(fileName);
-            $("#inputOwner").val(owner);
-            config.fileName = fileName;
-            config.owner = owner;
-            if (data.result.mailInfo) {
-                config.mailInfo = JSON.parse(data.result.mailInfo);
-                $("#inputTo").val(config.mailInfo.to);
-                $("#inputCc").val(config.mailInfo.cc);
-                $("#inputBcc").val(config.mailInfo.bcc);
-                $("#inputTitle").val(config.mailInfo.title);
-            }
-            let mail = getValueFromQuery("mail");
-            if (mail) {
-                sendMail();
-            }
-        });
     });
     $(".select-time").showCalendar();
 

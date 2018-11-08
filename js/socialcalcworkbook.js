@@ -235,4 +235,14 @@ SocialCalc.Workbook = function(parentId, formulaId) {
         const size = caclEditorSize();
         this.editor.ResizeTableEditor(size.width, size.height);
     }
+
+    this.getHtmlForOutlook = function () {
+        let html = "";
+        for (let i = 0; i < this.sheetInfoList.length; ++i) {
+            let info = this.sheetInfoList[i];
+            html += info.name + "<br/>";
+            html += info.context.RenderSheetForOutlook() + "<br/>";
+        }
+        return html;
+    }
 }
