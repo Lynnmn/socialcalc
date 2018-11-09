@@ -139,7 +139,7 @@ SocialCalc.Constants = {
    // For each of the following default sheet display values at least one of class and/or style are needed
 
    defaultHighlightTypeCursorClass: "",
-   defaultHighlightTypeCursorStyle: "color:#FFF;border:2px solid #73a2e3",
+   defaultHighlightTypeCursorStyle: "border:2px solid #73a2e3",
    defaultHighlightTypeRangeClass: "",
    defaultHighlightTypeRangeStyle: "color:#000;backgroundColor:#e3edf9;",
 

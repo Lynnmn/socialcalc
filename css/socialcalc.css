@@ -19,7 +19,7 @@
 
 .defaultComment {background-repeat:no-repeat;background-position:top right;background-image:url(../images/sc-commentbg.gif);}
 .defaultCommentNoGridStyle {}
-.defaultHighlightTypeCursor {color:#FFF;border: 2px solid #73a2e3;}
+.defaultHighlightTypeCursor {border: 2px solid #73a2e3;}
 .defaultHighlightTypeRange {color:#000;background-color:#e3edf9;}
 .defaultColname {font-size:small;text-align:center;color:#FFFFFF;background-color:#f7f7f7;cursor:e-resize;}
 .defaultSelectedColname {font-size:small;text-align:center;color:#FFFFFF;background-color:#e0e0e0;cursor:e-resize;}
