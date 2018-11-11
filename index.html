@@ -46,31 +46,6 @@
             </form>
         </div>
     </div>
-    <div class="modal fade" id="modelLoad" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <span class="modal-title" id="myModalLabel">
-                        引用云端表格
-                    </span>
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
-                        &times;
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <label>填写数据源: </label> <input type="text" id="inputRef2" value="biz=personalize&table=训练计划创建情况&dateFrom=-1&dateTo=-10">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭
-                    </button>
-                    <button type="button" class="btn btn-primary" id="buttonLoad">
-                        加载
-                    </button>
-                </div>
-            </div><!-- /.modal-content -->
-        </div><!-- /.modal -->
-    </div>
-
     <div class="modal fade" id="modelShareLink" tabindex="-1" role="dialog" aria-labelledby="myModalLabel1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -152,37 +127,48 @@
                 </div>
                 <div class="modal-body">
                     <div class="row">
-                        <div class="col-md-1">Sheet</div>
-                        <div class="col-md-7">
+                        <div class="col-md-2">Sheet</div>
+                        <div class="col-md-8">
                             <select id="selectSheet" class="form-control"></select>
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-1">Pos</div>
+                        <div class="col-md-2">Pos</div>
                         <div class="col-md-2">
                             <input placeholder="-1" type="number" id="inputPos"/>
                         </div>
+                        <div class="col-md-4">
+                            <p>-1表示增加,否则为替换</p>
+                        </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-1">Range</div>
+                        <div class="col-md-2">Range</div>
                         <div class="col-md-2">
                             <input placeholder="A1:B10" id="inputRange"/>
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-1">Source</div>
-                        <div class="col-md-11">
+                        <div class="col-md-2">Remote</div>
+                        <div class="col-md-8">
+                            <div>
+                                <select id="selectRemoteDataSource" class="form-control"></select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-2">Source</div>
+                        <div class="col-md-10">
                             <input placeholder="k1=v1&k2=v2" id="inputRef"/>
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-1"></div>
+                        <div class="col-md-2"></div>
                         <div class="col-md-2">
                             <input type="button" class="btn-success" id="inputSetDataSource" value="save"/>
                         </div>
                     </div>
                     <br/>
-                    <div style="overflow:scroll;">
+                    <div>
                         <table class="table">
                             <thead>
                                 <tr>
@@ -336,7 +322,13 @@
         }
         $("#selectSheet").html(selectHtml);
         showDataSourceList(0);
-        let obj = document.getElementById("modelLoad");
+        if (workbook.editor.range.hasrange) {
+            let range = workbook.editor.range;
+            let cr2 = SocialCalc.crToCoord(range.left, range.top) + ":" + SocialCalc.crToCoord(range.right, range.bottom);
+            $("#inputRange").val(cr2);
+        }
+        $("#inputPos").val("-1");
+        let obj = document.getElementById("modelDataSource");
         SocialCalc.Keyboard.passThru = obj;
         obj.focus();
     });
@@ -357,35 +349,37 @@
                         + source.coord1 + ':' + source.coord2 + '</td><td>'
                         + source.ref + '</td><td>'
                         + '<button class="btn btn-default" onclick="editDataSource(' + sheetIndex + ',' + j + ')">edit</button></td>'
-                        + '<td><button class="btn btn-default" onclick="remoteDataSource(' + sheetIndex + ',' + j + ')">X</button></td></tr>';
+                        + '<td><button class="btn btn-default" onclick="removeDataSource(' + sheetIndex + ',' + j + ')">X</button></td></tr>';
                 }
             }
         }
         $("#dataSourceList").html(dataSourceHtml);
+        fetchTableList();
     }
-    function remoteDataSource (sheetIndex, index) {
+    function removeDataSource (sheetIndex, index) {
         let sheetInfo = workbook.sheetInfoList[sheetIndex];
         if (!confirm('是否要刪除"' + sheetInfo.name + '"的一条数据源?')) {
             return;
         }
         let remote = sheetInfo.sheet.remote;
         if (remote.length > index) {
-            remote.splice(index, 0);
+            remote.splice(index, 1);
         }
         let currentSheetName = $("#selectSheet").val();
         let newSheetIndex = workbook.getIndexBySheetName(currentSheetName);
-        showDataSourceList(newSheetIndex);
+        if (newSheetIndex == sheetIndex) {
+            showDataSourceList(newSheetIndex);
+        }
     }
     function editDataSource (sheetIndex, index) {
         let sheetInfo = workbook.sheetInfoList[sheetIndex];
         let source = sheetInfo.sheet.remote[index];
         $("#inputRange").val(source.coord1 + ":" + source.coord2);
         $("#inputRef").val(source.ref);
-        $("#inputPos").val(source.pos);
+        $("#inputPos").val(index);
     }
     $("#inputSetDataSource").click(function () {
         let range = $("#inputRange").val();
-        let ref = $("#inputRef").val();
         let pos = parseInt($("#inputPos").val());
         let ref = $("#inputRef").val();
         let cr2 = range.split(':');
@@ -395,17 +389,38 @@
         }
         let sheetIndex = workbook.getIndexBySheetName($("#selectSheet").val());
         let sheet = workbook.sheetInfoList[sheetIndex].sheet;
-        if (pos < 0 || pos >= sheet.remote.length) {
-            let info = workbook.addRemoteInfo(sheet, ref);
-            loadRemoteData(sheet, info, config.today);
-            workbook.refresh();
-        } else {
-
-        }
-        let info = workbook.addRemoteInfo(sheet, ref);
+        let info = workbook.addRemoteInfo(sheet, cr2[0], cr2[1], ref, pos);
         loadRemoteData(sheet, info, config.today);
         workbook.refresh();
+        showDataSourceList(sheetIndex);
     });
+    $("#selectRemoteDataSource").click(function () {
+        $("#inputRef").val($("#selectRemoteDataSource").val());
+    });
+    function fetchTableList () {
+        function refreshRemoteDataSourceList () {
+            let html = "";
+            for (let i = 0; i < config.tableList.length; ++i) {
+                let info = config.tableList[i];
+                html += '<option value="' + info.source + '">' + info.table + '</option>';
+            }
+            $("#selectRemoteDataSource").html(html);
+        }
+        if (!config.tableList) {
+            let url = "/api/stat/table/info?offset=0&size=100";
+            $.get(url, function (jsonstr, status) {
+                let data = JSON.parse(jsonstr);
+                if (data.code != 0) {
+                    alert("failed to load " + url);
+                    return;
+                }
+                config.tableList = data.result;
+                refreshRemoteDataSourceList();
+            });
+        } else {
+            refreshRemoteDataSourceList();
+        }
+    }
     $("#imgSave").click(function () {
         $("#inputFileName").val(config.fileName);
         $("#inputOwner").val(config.owner);
@@ -537,7 +552,8 @@
         });
     }
     function initFromUrlParam (fileName, owner, today, mail) {
-        $.get("/api/file?fileName=" + fileName + "&owner=" + owner, function (jsonstr, status) {
+        let url = "/api/file?fileName=" + fileName + "&owner=" + owner;
+        $.get(url, function (jsonstr, status) {
             // console.log(jsonstr);
             let data = JSON.parse(jsonstr);
             if (data.code != 0) {
