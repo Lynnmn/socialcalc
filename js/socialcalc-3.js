@@ -4025,8 +4025,8 @@ SocialCalc.RenderContext = function(sheetobj) {
       {
          cursor: {style: scc.defaultHighlightTypeCursorStyle, className: scc.defaultHighlightTypeCursorClass},
          range: {style: scc.defaultHighlightTypeRangeStyle, className: scc.defaultHighlightTypeRangeClass},
-         cursorinsertup: {style: "color:#FFF;border:2px solid #73a2e3;backgroundRepeat:repeat-x;backgroundPosition:top left;backgroundImage:url("+scc.defaultImagePrefix+"cursorinsertup.gif);", className: scc.defaultHighlightTypeCursorClass},
-         cursorinsertleft: {style: "color:#FFF;border:2px solid #73a2e3;backgroundRepeat:repeat-y;backgroundPosition:top left;backgroundImage:url("+scc.defaultImagePrefix+"cursorinsertleft.gif);", className: scc.defaultHighlightTypeCursorClass},
+         cursorinsertup: {style: "border:2px solid #73a2e3;backgroundRepeat:repeat-x;backgroundPosition:top left;backgroundImage:url("+scc.defaultImagePrefix+"cursorinsertup.gif);", className: scc.defaultHighlightTypeCursorClass},
+         cursorinsertleft: {style: "border:2px solid #73a2e3;backgroundRepeat:repeat-y;backgroundPosition:top left;backgroundImage:url("+scc.defaultImagePrefix+"cursorinsertleft.gif);", className: scc.defaultHighlightTypeCursorClass},
          range2: {style: "color:#000;backgroundColor:#FFF;backgroundImage:url("+scc.defaultImagePrefix+"range2.gif);", className: ""}
       }
 

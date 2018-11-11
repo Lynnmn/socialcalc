@@ -37,7 +37,6 @@
             <a href="" download="a.txt" id="aDownloadFile">
                 <img class="icon-btn" src="./images/download.png" title="下载excel文档">
             </a>
-            <img class="icon-btn" src="./images/email.png" title="send mail" data-toggle="modal" data-target="#modelMail" id="imgSetMailInfo">
         </div>
         
         <div>
@@ -105,15 +104,42 @@
                 <div class="modal-body">
                     <input placeholder="填写用户名" id="inputOwner"/>
                     <input placeholder="填写文件名" id="inputFileName"/>
+                    <div>填写邮件信息</div>
+                    <div>
+                        <label>收件列表</label>
+                        <input placeholder="收件人:aaa@qq.com,bbb@qq.com" id="inputTo" value="95813422@qq.com"/>
+                    </div>
+                    <div>
+                        <label>抄送列表</label>
+                        <input placeholder="抄送:aaa@qq.com,bbb@qq.com" id="inputCc"/>
+                    </div>
+                    <div>
+                        <label>密送列表</label>
+                        <input placeholder="密送:aaa@qq.com,bbb@qq.com" id="inputBcc"/>
+                    </div>
+                    <div>
+                        <label>邮件标题</label>
+                        <input placeholder="title:" id="inputTitle" value="test for outlook"/>
+                    </div>
+                    <div>
+                        <label>开始时间</label>
+                        <input type="datetime-local" id="inputDateTime" value="2018-11-01T15:00:00"/>
+                    </div>
+                    <div>
+                        <label>每隔几天</label>
+                        <input type="number" id="inputPeriod" value="1"/>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="buttonSendMail" data-dismiss="modal">发送</button>
                     <button type="button" class="btn btn-primary" id="buttonSaveFile">保存</button>
                 </div>
             </div><!-- /.modal-content -->
         </div><!-- /.modal -->
     </div>
 
+<<<<<<< HEAD
     <div class="modal fade" id="modelMail" tabindex="-1" role="dialog" aria-labelledby="myModalLabel3" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -158,8 +184,6 @@
             </div><!-- /.modal-content -->
         </div><!-- /.modal -->
     </div>
-
-
     <div>
         <div class="tab-content container-fluid" id="sheet"></div>
         <ul class="nav nav-tabs" id="nav-tabs" role="tablist">
@@ -293,6 +317,20 @@
     $("#imgSave").click(function () {
         $("#inputFileName").val(config.fileName);
         $("#inputOwner").val(config.owner);
+        $("#inputTo").val(config.mailInfo.to);
+        $("#inputCc").val(config.mailInfo.cc);
+        $("#inputBcc").val( config.mailInfo.bcc);
+        $("#inputTitle").val(config.mailInfo.title);
+        if (!config.mailInfo.period) {
+            $("#inputPeriod").val("0");
+        } else {
+            $("#inputPeriod").val(config.mailInfo.period);
+        }
+        let d = new Date();
+        if (config.mailInfo.startTime) {
+            d = new Date(config.mailInfo.startTime);
+        }
+        $("#inputDateTime").val(d.format("yyyy-MM-ddThh:mm:ss"));
         let obj = document.getElementById("modelSaveToServer");
         SocialCalc.Keyboard.passThru = obj;
         obj.focus();
@@ -308,12 +346,18 @@
             alert("please owner name");
             return;
         }
+        config.mailInfo.to = $("#inputTo").val();
+        config.mailInfo.cc = $("#inputCc").val();
+        config.mailInfo.bcc = $("#inputBcc").val();
+        config.mailInfo.title = $("#inputTitle").val();
+        config.mailInfo.startTime = new Date($("#inputDateTime").val()).getTime();
+        config.mailInfo.period = $("#inputPeriod").val();
         let content = workbook.generateFile();
         $.post("/api/file", {
             fileName: fileName,
             owner: owner,
             content: content,
-            mailInfo: JSON.stringify(config.emailInfo),
+            mailInfo: JSON.stringify(config.mailInfo),
         }, function(jsonstr) {
             // console.log(jsonstr);
             let data = JSON.parse(jsonstr);
@@ -326,17 +370,21 @@
             config.owner = owner;
         });
     });
-    $("#imgSetMailInfo").click(function () {
-        $("#inputTo").val(config.mailInfo.to);
-        $("#inputCc").val(config.mailInfo.cc);
-        $("#inputBcc").val( config.mailInfo.bcc);
-        $("#inputTitle").val(config.mailInfo.title);
-        $("#inputPeriod").val(config.mailInfo.period);
-        let d = new Date(config.mailInfo.startTime);
-        $("#inputDateTime").val(d.format("yyyy-MM-ddThh:mm:ss"));
-        let obj = document.getElementById("modelMail");
-        SocialCalc.Keyboard.passThru = obj;
-        obj.focus();
+    $("#buttonSendMail").click(function () {
+        let to = $("#inputTo").val();
+        let cc = $("#inputCc").val();
+        let bcc = $("#inputBcc").val();
+        let title = $("#inputTitle").val();
+        if (!title) {
+            alert("请设置邮件标题");
+            return;
+        }
+        if (!to && !cc && !bcc) {
+            alert("请设置至少一个收件人");
+            return;
+        }
+        let html = workbook.getHtmlForOutlook();
+        sendMail(to, cc, bcc, title, html);
     });
     $("#buttonSaveMailInfo").click(function () {
         config.mailInfo.to = $("#inputTo").val();
