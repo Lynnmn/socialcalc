@@ -139,51 +139,6 @@
         </div><!-- /.modal -->
     </div>
 
-<<<<<<< HEAD
-    <div class="modal fade" id="modelMail" tabindex="-1" role="dialog" aria-labelledby="myModalLabel3" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <span class="modal-title" id="myModalLabel3">
-                        填写邮件信息
-                    </span>
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
-                        &times;
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div>
-                        <label>收件列表</label>
-                        <input placeholder="收件人:aaa@qq.com,bbb@qq.com" id="inputTo" value="95813422@qq.com"/>
-                    </div>
-                    <div>
-                        <label>抄送列表</label>
-                        <input placeholder="抄送:aaa@qq.com,bbb@qq.com" id="inputCc"/>
-                    </div>
-                    <div>
-                        <label>密送列表</label>
-                        <input placeholder="密送:aaa@qq.com,bbb@qq.com" id="inputBcc"/>
-                    </div>
-                    <div>
-                        <label>邮件标题</label>
-                        <input placeholder="title:" id="inputTitle" value="test for outlook"/>
-                    </div>
-                    <div>
-                        <label>开始时间</label>
-                        <input type="datetime-local" id="inputDateTime" value="2018-11-01T15:00:00"/>
-                    </div>
-                    <div>
-                        <label>每隔几天</label>
-                        <input type="number" id="inputPeriod" value="1"/>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" id="buttonSaveMailInfo" data-dismiss="modal">保存</button>
-                    <button type="button" class="btn btn-primary" id="buttonSendMail" data-dismiss="modal">发送</button>
-                </div>
-            </div><!-- /.modal-content -->
-        </div><!-- /.modal -->
-    </div>
     <div>
         <div class="tab-content container-fluid" id="sheet"></div>
         <ul class="nav nav-tabs" id="nav-tabs" role="tablist">
@@ -386,30 +341,6 @@
         let html = workbook.getHtmlForOutlook();
         sendMail(to, cc, bcc, title, html);
     });
-    $("#buttonSaveMailInfo").click(function () {
-        config.mailInfo.to = $("#inputTo").val();
-        config.mailInfo.cc = $("#inputCc").val();
-        config.mailInfo.bcc = $("#inputBcc").val();
-        config.mailInfo.title = $("#inputTitle").val();
-        config.mailInfo.startTime = new Date($("#inputDateTime").val()).getTime();
-        config.mailInfo.period = $("#inputPeriod").val();
-    });
-    $("#buttonSendMail").click(function () {
-        let to = $("#inputTo").val();
-        let cc = $("#inputCc").val();
-        let bcc = $("#inputBcc").val();
-        let title = $("#inputTitle").val();
-        if (!title) {
-            alert("请设置邮件标题");
-            return;
-        }
-        if (!to && !cc && !bcc) {
-            alert("请设置至少一个收件人");
-            return;
-        }
-        let html = workbook.getHtmlForOutlook();
-        sendMail(to, cc, bcc, title, html);
-    });
 
     $("#buttonLoad").click(function() {
         let ref = $("#inputRef").val();
@@ -459,10 +390,10 @@
             return;
         }
         $.post("/api/mail", {
-            title: config.mailInfo.title,
-            to: config.mailInfo.to,
-            cc: config.mailInfo.cc,
-            bcc: config.mailInfo.bcc,
+            title: title,
+            to: to,
+            cc: cc,
+            bcc: bcc,
             body: html
         }, function(jsonstr) {
             console.log(jsonstr);
