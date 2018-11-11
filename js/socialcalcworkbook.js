@@ -165,11 +165,11 @@ SocialCalc.Workbook = function(parentId, formulaId) {
         return JSON.stringify(result);
     }
 
-    this.addRemoteInfo = function (sheet, ref) {
+    this.addRemoteInfo = function (sheet, ref, crFrom,  crTo) {
         var range = this.editor.range;
         var info = {
-            coord1: SocialCalc.crToCoord(range.left, range.top),
-            coord2: SocialCalc.crToCoord(range.right, range.bottom),
+            coord1: crFrom,
+            coord2: crTo,
             ref: ref,
         }
         sheet.remote.push(info);
