@@ -52,7 +52,7 @@ SocialCalc.Workbook = function(parentId, formulaId) {
         };
     }
 
-    this.addNewSheet = function (name, str, selected) {
+    this.addNewSheet = function (name, str) {
         var sheetInfo = null;
         if (!name) {
             name = this.generateSheetName();
@@ -83,9 +83,6 @@ SocialCalc.Workbook = function(parentId, formulaId) {
             context: context,
         };
         this.sheetInfoList.push(sheetInfo);
-        if (selected || this.sheetInfoList.length == 1) {
-            this.selectSheet(name);
-        }
         return sheetInfo;
     }
     
@@ -202,6 +199,8 @@ SocialCalc.Workbook = function(parentId, formulaId) {
                         cell.valuetype = "n";
                     }
                 }
+                delete cell.displaystring;
+                sheet.recalcchangedavalue = true; // remember something changed in case other code wants to know
             }
         }
     }
@@ -247,5 +246,12 @@ SocialCalc.Workbook = function(parentId, formulaId) {
             html += info.context.RenderSheetForOutlook() + "<br/>";
         }
         return html;
+    }
+
+    this.recalcAllSheet = function () {
+        for (let i = 0; i < this.sheetInfoList.length; ++i) {
+            let info = this.sheetInfoList[i];
+            info.sheet.RecalcSheet();
+        }
     }
 }
