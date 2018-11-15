@@ -189,15 +189,16 @@ SocialCalc.Workbook = function(parentId, formulaId) {
             for (var c = 0; c < row.length && c < ccount; ++c) {
                 var coord = SocialCalc.crToCoord(c + cr1.col, r + cr1.row);
                 var cell = sheet.GetAssuredCell(coord);
-                cell.datavalue = row[c];
                 if (!cell.datatype) {
                     if (r == 0) {
                         cell.datatype = "t";
                         cell.valuetype = "t";
+                        cell.datavalue = row[c];
                     } else {
-                        cell.datatype = "v";
-                        cell.valuetype = "n";
+                        SocialCalc.SetConvertedCell(sheet, coord, row[c]);
                     }
+                } else {
+                    cell.datavalue = row[c];
                 }
                 delete cell.displaystring;
                 sheet.recalcchangedavalue = true; // remember something changed in case other code wants to know
