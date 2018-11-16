@@ -4991,7 +4991,6 @@ SocialCalc.AssignID = function (obj, element, id) {
 //
 
 SocialCalc.GetCellContents = function(sheetobj, coord) {
-
    var result = "";
    var cellobj = sheetobj.cells[coord];
    if (cellobj) {
