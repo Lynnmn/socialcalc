@@ -52,7 +52,7 @@ SocialCalc.Workbook = function(parentId, formulaId) {
         };
     }
 
-    this.addNewSheet = function (name, str, selected) {
+    this.addNewSheet = function (name, str) {
         var sheetInfo = null;
         if (!name) {
             name = this.generateSheetName();
@@ -83,9 +83,6 @@ SocialCalc.Workbook = function(parentId, formulaId) {
             context: context,
         };
         this.sheetInfoList.push(sheetInfo);
-        if (selected || this.sheetInfoList.length == 1) {
-            this.selectSheet(name);
-        }
         return sheetInfo;
     }
     
@@ -192,16 +189,19 @@ SocialCalc.Workbook = function(parentId, formulaId) {
             for (var c = 0; c < row.length && c < ccount; ++c) {
                 var coord = SocialCalc.crToCoord(c + cr1.col, r + cr1.row);
                 var cell = sheet.GetAssuredCell(coord);
-                cell.datavalue = row[c];
                 if (!cell.datatype) {
                     if (r == 0) {
                         cell.datatype = "t";
                         cell.valuetype = "t";
+                        cell.datavalue = row[c];
                     } else {
-                        cell.datatype = "v";
-                        cell.valuetype = "n";
+                        SocialCalc.SetConvertedCell(sheet, coord, row[c]);
                     }
+                } else {
+                    cell.datavalue = row[c];
                 }
+                delete cell.displaystring;
+                sheet.recalcchangedavalue = true; // remember something changed in case other code wants to know
             }
         }
     }
@@ -247,5 +247,12 @@ SocialCalc.Workbook = function(parentId, formulaId) {
             html += info.context.RenderSheetForOutlook() + "<br/>";
         }
         return html;
+    }
+
+    this.recalcAllSheet = function () {
+        for (let i = 0; i < this.sheetInfoList.length; ++i) {
+            let info = this.sheetInfoList[i];
+            info.sheet.RecalcSheet();
+        }
     }
 }
