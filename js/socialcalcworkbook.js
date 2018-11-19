@@ -239,12 +239,24 @@ SocialCalc.Workbook = function(parentId, formulaId) {
         this.editor.ResizeTableEditor(size.width, size.height);
     }
 
-    this.getHtmlForOutlook = function () {
+    this.getHtmlForOutlook = function (chapterList) {
         let html = "";
-        for (let i = 0; i < this.sheetInfoList.length; ++i) {
-            let info = this.sheetInfoList[i];
-            html += info.name + "<br/>";
-            html += info.context.RenderSheetForOutlook() + "<br/>";
+        if (chapterList && chapterList.length > 0) {
+            for (let i = 0; i < chapterList.length; ++i) {
+                let sheetIndex = this.getIndexBySheetName(chapterList[i].sheetName);
+                if (sheetIndex < 0) {
+                    continue;
+                }
+                let info = this.sheetInfoList[sheetIndex];
+                html += '<div><b>' + chapterList[i].title + '</b></div><br/>';
+                html += info.context.RenderSheetForOutlook() + "<br/>";
+            }
+        } else {
+            for (let i = 0; i < this.sheetInfoList.length; ++i) {
+                let info = this.sheetInfoList[i];
+                html += info.name + "<br/>";
+                html += info.context.RenderSheetForOutlook() + "<br/>";
+            }
         }
         return html;
     }
