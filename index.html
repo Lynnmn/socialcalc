@@ -9,6 +9,7 @@
     <script src="./dist/jquery.calendar.js"></script>
     <script src="./dist/popper.min.js"></script>
     <script src="./dist/bootstrap.min.js"></script>
+    <script src="./dist/utils.js"></script>
     <script type="text/javascript" src="js/socialcalcconstants.js"></script>
     <script type="text/javascript" src="js/socialcalc-3.js"></script>
     <script type="text/javascript" src="js/socialcalctableeditor.js"></script>
@@ -32,7 +33,7 @@
             </label>
             <img class="icon-btn" src="./images/import.png" title="导入远程文档" data-toggle="modal" data-target="#modelDataSource" id="imgLoad">
             <img class="icon-btn" src="./images/share.png" title="分享链接" data-toggle="modal" data-target="#modelShareLink" id="show-share-link" >
-    
+            <img class="icon-btn" src="./images/mail.png" title="邮件设置" data-toggle="modal" data-target="#modelMail" id="imgMail" >
             <div class="action-btns"></div>
             <a href="" download="a.txt" id="aDownloadFile">
                 <img class="icon-btn" src="./images/download.png" title="下载excel文档">
@@ -45,6 +46,76 @@
                 <input type="text" id="formula" placeholder="=A1+A2">
             </form>
         </div>
+    </div>
+    <div class="modal fade" id="modelSaveToServer" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span class="modal-title">填写生成文件的文件名</span>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <input placeholder="填写用户名" id="inputOwner"/>
+                    <input placeholder="填写文件名" id="inputFileName"/>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="buttonSaveFile">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modelMail" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span class="modal-title">邮件设置</span>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div>填写邮件信息</div>
+                    <div>
+                        <label>收件列表</label>
+                        <input placeholder="收件人:aaa@qq.com,bbb@qq.com" id="inputTo" value="95813422@qq.com"/>
+                    </div>
+                    <div>
+                        <label>抄送列表</label>
+                        <input placeholder="抄送:aaa@qq.com,bbb@qq.com" id="inputCc"/>
+                    </div>
+                    <div>
+                        <label>密送列表</label>
+                        <input placeholder="密送:aaa@qq.com,bbb@qq.com" id="inputBcc"/>
+                    </div>
+                    <div>
+                        <label>邮件标题</label>
+                        <input placeholder="title:" id="inputTitle" value="test for outlook"/>
+                    </div>
+                    <div>填写邮件章节信息</div>
+                    <div class="row" id="divChapter">
+                    </div>
+                    <div class="row">
+                        <div class="col-1"><p>#</p></div>
+                        <div class="col-5"><input id="inputChapterTitle" type="text"/></div>
+                        <div class="col-5"><select id="selectChapterSheetName"></select></div>
+                        <div class="col-1"><button class="btn btn-primary" id="buttonSaveChapter">+</button></div>
+                    </div>
+                    <hr/>
+                    <div>
+                        <label>开始时间</label>
+                        <input type="datetime-local" id="inputDateTime" value="2018-11-01T15:00:00"/>
+                    </div>
+                    <div>
+                        <label>每隔几天</label>
+                        <input type="number" id="inputPeriod" value="1"/>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="buttonSendMail" data-dismiss="modal">发送</button>
+                    <button type="button" class="btn btn-primary" id="buttonSaveMailInfo">保存</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
     </div>
     <div class="modal fade" id="modelShareLink" tabindex="-1" role="dialog" aria-labelledby="myModalLabel1" aria-hidden="true">
         <div class="modal-dialog">
@@ -64,56 +135,6 @@
             </div><!-- /.modal-content -->
         </div><!-- /.modal -->
     </div>
-
-    <div class="modal fade" id="modelSaveToServer" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <span class="modal-title" id="myModalLabel2">
-                        填写生成文件的文件名
-                    </span>
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
-                        &times;
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <input placeholder="填写用户名" id="inputOwner"/>
-                    <input placeholder="填写文件名" id="inputFileName"/>
-                    <div>填写邮件信息</div>
-                    <div>
-                        <label>收件列表</label>
-                        <input placeholder="收件人:aaa@qq.com,bbb@qq.com" id="inputTo" value="95813422@qq.com"/>
-                    </div>
-                    <div>
-                        <label>抄送列表</label>
-                        <input placeholder="抄送:aaa@qq.com,bbb@qq.com" id="inputCc"/>
-                    </div>
-                    <div>
-                        <label>密送列表</label>
-                        <input placeholder="密送:aaa@qq.com,bbb@qq.com" id="inputBcc"/>
-                    </div>
-                    <div>
-                        <label>邮件标题</label>
-                        <input placeholder="title:" id="inputTitle" value="test for outlook"/>
-                    </div>
-                    <div>
-                        <label>开始时间</label>
-                        <input type="datetime-local" id="inputDateTime" value="2018-11-01T15:00:00"/>
-                    </div>
-                    <div>
-                        <label>每隔几天</label>
-                        <input type="number" id="inputPeriod" value="1"/>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                    <button type="button" class="btn btn-primary" id="buttonSendMail" data-dismiss="modal">发送</button>
-                    <button type="button" class="btn btn-primary" id="buttonSaveFile">保存</button>
-                </div>
-            </div><!-- /.modal-content -->
-        </div><!-- /.modal -->
-    </div>
-
     <div class="modal fade" id="modelDataSource" tabindex="-1" role="dialog" aria-labelledby="myModalLabelDataSource" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -203,29 +224,8 @@
     </div -->
 </div>
 <script>
-    Date.prototype.format = function(fmt) {
-        var o = {
-            "M+" : this.getMonth()+1,                 //月份
-            "d+" : this.getDate(),                    //日
-            "h+" : this.getHours(),                   //小时
-            "m+" : this.getMinutes(),                 //分
-            "s+" : this.getSeconds(),                 //秒
-            "q+" : Math.floor((this.getMonth()+3)/3), //季度
-            "S"  : this.getMilliseconds()             //毫秒
-        };
-        if(/(y+)/.test(fmt)) {
-            fmt=fmt.replace(RegExp.$1, (this.getFullYear()+"").substr(4 - RegExp.$1.length));
-        }
-        for(var k in o) {
-            if(new RegExp("("+ k +")").test(fmt)){
-                fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));
-            }
-        }
-        return fmt;
-    }
-
+    let sheetIdGenerator = new SheetIdGenerator();
     let workbook = new SocialCalc.Workbook("sheet", "formula");
-    let sheetIdMap = {};
     let config = {
         fileName: "",
         owner: "",
@@ -233,22 +233,12 @@
         mailInfo: {
             period: 1,
             startTime: new Date().getTime(),
+            title: "",
+            chapterList: [], // {"title":"","sheetName":""}
         }
     };
-    function generateSheetId () {
-        let i = 1;
-        while (true) {
-            let name = "sheet" + i;
-            if (!sheetIdMap[name]) {
-                sheetIdMap[name] = 1;
-                return name;
-            }
-            ++i;
-        }
-    }
-
     function addNewSheetTab (sheetInfo) {
-        const sheetId = generateSheetId();
+        const sheetId = sheetIdGenerator.nextId();
         if (!sheetInfo) {
             sheetInfo = workbook.addNewSheet();
             workbook.selectSheet(sheetInfo.name);
@@ -280,7 +270,7 @@
     $(document).on('click', ".nav-item", function(){
         const id = $(this).children().attr("ID")
         workbook.selectSheet(id, "sheet", "formula");
-    })
+    });
 
     $("#aDownloadFile").click(function (e) {
         let str = workbook.generateFile();
@@ -426,6 +416,119 @@
             refreshRemoteDataSourceList();
         }
     }
+    config.mailSetting = (function () {
+        // imgMail -> modelMail(tbodyChapter, inputChapterTitle, selectChapterSheetName, buttonSaveChapter, buttonSaveMailInfo)
+        function deleteChapter (i) {
+            config.mailInfo.chapterList.splice(i, 1);
+            renderChapter();
+        }
+        function saveChapter () {
+            let chapterTitle = $("#inputChapterTitle").val();
+            if (!chapterTitle) {
+                alert('请设置章节标题');
+                return;
+            }
+            let selectChapterSheetName = $("#selectChapterSheetName").val();
+            if (!selectChapterSheetName) {
+                alert('请设置章节对应表单');
+                return;
+            }
+            let chapter = {
+                title: chapterTitle,
+                sheetName: selectChapterSheetName
+            };
+            config.mailInfo.chapterList.push(chapter);
+            renderChapter();
+        }
+        function saveMailInfo () {
+            config.mailInfo.to = $("#inputTo").val();
+            config.mailInfo.cc = $("#inputCc").val();
+            config.mailInfo.bcc = $("#inputBcc").val();
+            config.mailInfo.title = $("#inputTitle").val();
+            config.mailInfo.startTime = new Date($("#inputDateTime").val()).getTime();
+            config.mailInfo.period = $("#inputPeriod").val();
+        }
+        function getChapterHtml () {
+            let html = "";
+            for (let i = 0; i < config.mailInfo.chapterList.length; ++i) {
+                let item = config.mailInfo.chapterList[i];
+                html += '<div class="col-1"><p>章节' + (i + 1) + '</p></div>';
+                html += '<div class="col-5"><p>' + item.title + '</p></div>';
+                html += '<div class="col-5"><p>' + item.sheetName + '</p></div>';
+                html += '<div class="col-1"><button class="btn btn-default" onclick="config.mailSetting.deleteChapter(' + i + ')">X</button></div>';
+            }
+            return html;
+        }
+        function renderSelectChapterSheetName () {
+            let html = '<select class="custom-select" id="selectChapterSheetName">';
+            html += '<option value=""></option>';
+            for (let i = 0; i < workbook.sheetInfoList.length; ++i) {
+                let sheetInfo = workbook.sheetInfoList[i];
+                html += '<option value="' + sheetInfo.name + '">' + sheetInfo.name + '</option>';
+            }
+            html += '</select>';
+            $("#selectChapterSheetName").html(html);
+            return html;
+        }
+        function renderChapter () {
+            let html = getChapterHtml();
+            $("#divChapter").html(html);
+        }
+        function init () {
+            if (!config.mailInfo) {
+                config.mailInfo = {
+                    to: "",
+                    cc: "",
+                    bcc: "",
+                    title: "",
+                    period: 0,
+                    startTime: 0,
+                    chapterList:[],
+                };
+            }
+            if (!config.mailInfo.chapterList) {
+                config.mailInfo.chapterList = [];
+            }
+            $("#inputTo").val(config.mailInfo.to);
+            $("#inputCc").val(config.mailInfo.cc);
+            $("#inputBcc").val( config.mailInfo.bcc);
+            $("#inputTitle").val(config.mailInfo.title);
+            if (!config.mailInfo.period) {
+                $("#inputPeriod").val("0");
+            } else {
+                $("#inputPeriod").val(config.mailInfo.period);
+            }
+            let d = new Date();
+            if (config.mailInfo.startTime) {
+                d = new Date(config.mailInfo.startTime);
+            }
+            $("#inputDateTime").val(d.format("yyyy-MM-ddThh:mm:ss"));
+            $("#hideChapterIndex").val(-1);
+            $("#inputChapterTitle").val("");
+            $("#selectChapterSheetName").val("");
+            renderSelectChapterSheetName();
+            renderChapter();
+        }
+        $("#buttonSaveChapter").click(function () {
+            saveChapter();
+        });
+        $("#buttonSaveMailInfo").click(function () {
+            saveMailInfo();
+        });
+        $("#selectChapterSheetName").change(function () {
+           if (!$("#inputChapterTitle").val()) {
+               $("#inputChapterTitle").val( $("#selectChapterSheetName").val());
+           }
+        });
+        $("#imgMail").click(function () {
+            init();
+            let obj = document.getElementById("modelMail");
+            SocialCalc.Keyboard.passThru = obj;
+            obj.focus();
+        });
+        this.deleteChapter = deleteChapter;
+        this.saveChapter = saveChapter;
+    })();
     $("#imgSave").click(function () {
         $("#inputFileName").val(config.fileName);
         $("#inputOwner").val(config.owner);
