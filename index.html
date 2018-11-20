@@ -165,7 +165,9 @@
                         &times;
                     </button>
                 </div>
-                <div class="modal-body"></div>
+                <div class="modal-body">
+                    <a id="aShareLink" href="#"></a>
+                </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
                 </div>
@@ -695,7 +697,7 @@
     $("#show-share-link").click(function () {
         let link = window.location.origin + window.location.pathname
             + "?fileName=" + config.fileName + "&owner=" + config.owner;
-        $("#modelShareLink .modal-body").html(link)
+        $("#aShareLink").attr("href", link).text(link);
     });
 
     function sendMail (to, cc, bcc, title, html) {
