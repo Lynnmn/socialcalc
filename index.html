@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>训练计划数据报表</title>
+    <title>数据报表</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="./dist/bootstrap.min.css">
@@ -287,6 +287,7 @@
         const sheetId = generateSheetId();
         if (!sheetInfo) {
             sheetInfo = workbook.addNewSheet();
+            workbook.selectSheet(sheetInfo.name);
         }
         const newLi = $('<li class="nav-item"><a class="nav-link" data-toggle="tab" href="#'+ sheetId +'" id="'+ sheetId +'">'+ sheetInfo.name +'</a></li>');
         $("#add-sheet-btn").before(newLi);
@@ -334,7 +335,7 @@
             }
         }
     });
-    function loadRemoteData (sheet, info, today) {
+    function loadRemoteData (sheet, info, today, f) {
         if (sheet.remote && sheet.remote.length > 0) {
             let url = "/api/stat?" + info.ref;
             if (today) {
@@ -347,6 +348,9 @@
                     return;
                 }
                 workbook.updateRemoteData(sheet, info, data.result);
+                if (f) {
+                    f();
+                }
             });
         }
     }
@@ -426,8 +430,9 @@
         let sheetIndex = workbook.getIndexBySheetName($("#selectSheet").val());
         let sheet = workbook.sheetInfoList[sheetIndex].sheet;
         let info = workbook.addRemoteInfo(sheet, cr2[0], cr2[1], ref, pos);
-        loadRemoteData(sheet, info, config.today);
-        workbook.refresh();
+        loadRemoteData(sheet, info, config.today, function () {
+            workbook.refresh();
+        });
         showDataSourceList(sheetIndex);
     });
     $("#selectRemoteDataSource").click(function () {
@@ -538,28 +543,46 @@
         }
         let sheet = workbook.getCurrentSheet();
         let info = workbook.addRemoteInfo(sheet, ref);
-        loadRemoteData(sheet, info, config.today);
-        workbook.refresh();
+        loadRemoteData(sheet, info, config.today, function () {
+            workbook.refresh();
+        });
     });
     function getValueFromQuery (name) {
         let reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
         let r = window.location.search.substr(1).match(reg);
         return r != null ? decodeURIComponent(r[2]) : null;
     }
-    function loadFileData (fileData, today) {
+    function loadFileData (fileData, today, f) {
         let list = JSON.parse(fileData);
-        let first = true;
+        var remoteTaskCount = 0;
         for (let i = 0; i < list.length; ++i) {
             let info = list[i];
-            let sheetInfo = workbook.addNewSheet(info.name, info.content, first);
+            let sheetInfo = workbook.addNewSheet(info.name, info.content);
             addNewSheetTab(sheetInfo);
-            first = false;
             for (let j = 0; j < sheetInfo.sheet.remote.length; ++j) {
-                loadRemoteData(sheetInfo.sheet, sheetInfo.sheet.remote[j], today);
+                remoteTaskCount++;
             }
         }
-        if (!first) {
+        function onComplete () {
+            workbook.recalcAllSheet();
+            $("#sheet1").click();
             workbook.refresh();
+            f();
+        }
+        if (remoteTaskCount > 0) {
+            for (let i = 0; i < workbook.sheetInfoList.length; ++i) {
+                let sheetInfo = workbook.sheetInfoList[i];
+                for (let j = 0; j < sheetInfo.sheet.remote.length; ++j) {
+                    loadRemoteData(sheetInfo.sheet, sheetInfo.sheet.remote[j], today, function () {
+                        remoteTaskCount--;
+                        if (remoteTaskCount == 0) {
+                            onComplete();
+                        }
+                    });
+                }
+            }
+        } else {
+            onComplete();
         }
     }
     $("#show-share-link").click(function () {
@@ -605,12 +628,15 @@
                 config.mailInfo = JSON.parse(data.result.mailInfo);
             }
             let content = data.result.content;
-            loadFileData(content, today);
-            if (mail) {
-                let mailInfo = config.mailInfo;
-                let html = workbook.getHtmlForOutlook();
-                sendMail(mailInfo.to, mailInfo.cc, mailInfo.bcc, mailInfo.title, html);
-            }
+            loadFileData(content, today, function() {
+                if (mail) {
+                    window.setTimeout(function () { //
+                        let mailInfo = config.mailInfo;
+                        let html = workbook.getHtmlForOutlook();
+                        sendMail(mailInfo.to, mailInfo.cc, mailInfo.bcc, mailInfo.title, html);
+                    }, 1000); // give 1 second for recalc the formula data
+                }
+            });
         });
     }
     $(document).ready(function () {
