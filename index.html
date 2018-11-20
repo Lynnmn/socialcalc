@@ -627,6 +627,7 @@
             alert("OK");
             config.fileName = fileName;
             config.owner = owner;
+            document.title = fileName;
         });
     });
     $("#buttonSendMail").click(function () {
@@ -732,6 +733,7 @@
             }
             config.fileName = fileName;
             config.owner = owner;
+            document.title = fileName;
             if (today) {
                 config.today = today;
             }
