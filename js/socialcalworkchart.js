@@ -7,9 +7,14 @@ $(document).ready(function() {
     })
 
     
-
+    
     $('#buttonSaveChart').click(function() {
-        console.log(SocialCalc.Clipboard.clipboard)
+        var editor = SocialCalc.EditorStepInfo.editor;
+        console.log(editor.range)
+        const { hasrange } = editor.range
+        if(hasrange) {
+            const { top, left, right, bottom } = editor.range
+        }
         if(selectedChart === 'pie') {
             var chart = {
                 plotBackgroundColor: null,
