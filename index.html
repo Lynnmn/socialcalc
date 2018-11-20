@@ -6,9 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="./dist/bootstrap.min.css">
     <script src="./dist/jquery.min.js"></script>
-    <script src="./dist/jquery.calendar.js"></script>
     <script src="./dist/popper.min.js"></script>
     <script src="./dist/bootstrap.min.js"></script>
+    <script type="text/javascript" src="dist/drag.1.0.js"></script>
+    <script src="http://code.highcharts.com/highcharts.js"></script>
     <script type="text/javascript" src="js/socialcalcconstants.js"></script>
     <script type="text/javascript" src="js/socialcalc-3.js"></script>
     <script type="text/javascript" src="js/socialcalctableeditor.js"></script>
@@ -17,6 +18,7 @@
     <script type="text/javascript" src="js/socialcalcpopup.js"></script>
     <script type="text/javascript" src="js/socialcalcworkbook.js"></script>
     <script type="text/javascript" src="js/socialcalcactionbtns.js"></script>
+    <script type="text/javascript" src="js/socialcalworkchart.js"></script>
     <link rel="stylesheet" type="text/css" href="css/socialcalc.css">
     <link rel="stylesheet" type="text/css" href="css/index.css">
     <link rel="stylesheet" type="text/css" href="css/reset.css">
@@ -37,6 +39,8 @@
             <a href="" download="a.txt" id="aDownloadFile">
                 <img class="icon-btn" src="./images/download.png" title="下载excel文档">
             </a>
+            <img class="icon-btn" src="./images/chart.png" title="插入图表" data-toggle="modal" data-target="#modelChart" id="modelChartIcon">
+          
         </div>
         
         <div>
@@ -63,6 +67,34 @@
                 </div>
             </div><!-- /.modal-content -->
         </div><!-- /.modal -->
+    </div>
+
+
+    <div class="modal fade" id="modelChart" tabindex="-1" role="dialog" aria-labelledby="modelChartLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span class="modal-title" id="myModalLabel1">
+                        插入图表
+                    </span>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="chart-list" >
+                        <img title="柱状图" name="bar" src="./images/bar.png" />
+                        <img title="折线图" name="line" src="./images/brokenline.png" />
+                        <img title="饼图" name="pie" src="./images/pie.png" />
+                        <img title="区域图" name="area" src="./images/area.png" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="buttonSaveChart">确定</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="modal fade" id="modelSaveToServer" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2" aria-hidden="true">
@@ -198,9 +230,13 @@
             </li>
         </ul>
     </div>
-    <!-- div class="alert alert-success">
-        指定操作成功提示信息。
-    </div -->
+   
+    <div class="chart" id="chart">
+        <img src="./images/delete.png" class="chart-delete" >
+        <div id="chart-container"></div>
+    </div>
+   
+    
 </div>
 <script>
     Date.prototype.format = function(fmt) {
@@ -625,7 +661,6 @@
             initFromUrlParam(fileName, owner, today, mail);
         }
     });
-    $(".select-time").showCalendar();
 
 </script>
 </body>
