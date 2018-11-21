@@ -745,7 +745,7 @@
                 if (mail) {
                     window.setTimeout(function () { //
                         let mailInfo = config.mailInfo;
-                        let html = workbook.getHtmlForOutlook();
+                        let html = workbook.getHtmlForOutlook(config.mailInfo.chapterList);
                         sendMail(mailInfo.to, mailInfo.cc, mailInfo.bcc, mailInfo.title, html);
                     }, 1000); // give 1 second for recalc the formula data
                 }
