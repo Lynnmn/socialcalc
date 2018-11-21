@@ -5835,7 +5835,7 @@ SocialCalc.RenderSheetForOutlook = function(context) {
     var sheetattribs=sheetobj.attribs;
     const maxrow = sheetobj.attribs.lastrow;
     const maxcol = sheetobj.attribs.lastcol;
-    let html = '<table cellspacing="0"  border="1" style=" border:1px solid; border-collapse:collapse;">';
+    let html = '<table cellspacing="0"  border="1" style="border-collapse:collapse;">';
     for (let r = 1; r <= maxrow; ++r) {
         html += '<tr>';
         for (let c = 1; c <= maxcol; ++c) {
