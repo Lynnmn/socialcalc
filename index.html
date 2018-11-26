@@ -334,23 +334,25 @@
             }
         }
     });
-    function loadRemoteData (sheet, info, today, f) {
+    async function loadRemoteData (sheet, info, today) {
         if (sheet.remote && sheet.remote.length > 0) {
             let url = "/api/stat?" + info.ref;
             if (today) {
                 url += "&today=" + today;
             }
-            $.get(url, function (jsonstr, status) {
-                let data = JSON.parse(jsonstr);
-                if (data.code != 0) {
-                    alert("failed to load " + url);
-                    return;
-                }
-                workbook.updateRemoteData(sheet, info, data.result);
-                if (f) {
-                    f();
-                }
-            });
+            return new Promise(function (resolve, reject) {
+                $.get(url, function (jsonstr, status) {
+                    // TODO reject if (status != 200)
+                    let data = JSON.parse(jsonstr);
+                    if (data.code != 0) {
+                        alert("failed to load " + url);
+                        resolve();
+                        return;
+                    }
+                    workbook.updateRemoteData(sheet, info, data.result);
+                    resolve();
+                });
+            })
         }
     }
     $("#imgLoad").click(function () {
@@ -417,7 +419,7 @@
         $("#inputRef").val(source.ref);
         $("#inputPos").val(index);
     }
-    $("#inputSetDataSource").click(function () {
+    $("#inputSetDataSource").click(async function () {
         let range = $("#inputRange").val();
         let pos = parseInt($("#inputPos").val());
         let ref = $("#inputRef").val();
@@ -429,9 +431,8 @@
         let sheetIndex = workbook.getIndexBySheetName($("#selectSheet").val());
         let sheet = workbook.sheetInfoList[sheetIndex].sheet;
         let info = workbook.addRemoteInfo(sheet, cr2[0], cr2[1], ref, pos);
-        loadRemoteData(sheet, info, config.today, function () {
-            workbook.refresh();
-        });
+        await loadRemoteData(sheet, info, config.today);
+        workbook.refresh();
         showDataSourceList(sheetIndex);
     });
     $("#selectRemoteDataSource").click(function () {
@@ -647,7 +648,7 @@
         sendMail(to, cc, bcc, title, html);
     });
 
-    $("#buttonLoad").click(function() {
+    $("#buttonLoad").click(async function() {
         let ref = $("#inputRef").val();
         if (!workbook.editor.range.hasrange) {
             alert("please select a range");
@@ -655,47 +656,27 @@
         }
         let sheet = workbook.getCurrentSheet();
         let info = workbook.addRemoteInfo(sheet, ref);
-        loadRemoteData(sheet, info, config.today, function () {
-            workbook.refresh();
-        });
+        await loadRemoteData(sheet, info, config.today);
+        workbook.refresh();
     });
     function getValueFromQuery (name) {
         let reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
         let r = window.location.search.substr(1).match(reg);
         return r != null ? decodeURIComponent(r[2]) : null;
     }
-    function loadFileData (fileData, today, f) {
+    async function loadFileData (fileData, today) {
         let list = JSON.parse(fileData);
-        var remoteTaskCount = 0;
         for (let i = 0; i < list.length; ++i) {
             let info = list[i];
             let sheetInfo = workbook.addNewSheet(info.name, info.content);
             addNewSheetTab(sheetInfo);
             for (let j = 0; j < sheetInfo.sheet.remote.length; ++j) {
-                remoteTaskCount++;
+                await loadRemoteData(sheetInfo.sheet, sheetInfo.sheet.remote[j], today);
             }
         }
-        function onComplete () {
-            workbook.recalcAllSheet();
-            $("#sheet1").click();
-            workbook.refresh();
-            f();
-        }
-        if (remoteTaskCount > 0) {
-            for (let i = 0; i < workbook.sheetInfoList.length; ++i) {
-                let sheetInfo = workbook.sheetInfoList[i];
-                for (let j = 0; j < sheetInfo.sheet.remote.length; ++j) {
-                    loadRemoteData(sheetInfo.sheet, sheetInfo.sheet.remote[j], today, function () {
-                        remoteTaskCount--;
-                        if (remoteTaskCount == 0) {
-                            onComplete();
-                        }
-                    });
-                }
-            }
-        } else {
-            onComplete();
-        }
+        workbook.recalcAllSheet();
+        $("#sheet1").click();
+        workbook.refresh();
     }
     $("#show-share-link").click(function () {
         let link = window.location.origin + window.location.pathname
@@ -724,7 +705,7 @@
     }
     function initFromUrlParam (fileName, owner, today, mail) {
         let url = "/api/file?fileName=" + fileName + "&owner=" + owner;
-        $.get(url, function (jsonstr, status) {
+        $.get(url, async function (jsonstr, status) {
             // console.log(jsonstr);
             let data = JSON.parse(jsonstr);
             if (data.code != 0) {
@@ -741,15 +722,14 @@
                 config.mailInfo = JSON.parse(data.result.mailInfo);
             }
             let content = data.result.content;
-            loadFileData(content, today, function() {
-                if (mail) {
-                    window.setTimeout(function () { //
-                        let mailInfo = config.mailInfo;
-                        let html = workbook.getHtmlForOutlook(config.mailInfo.chapterList);
-                        sendMail(mailInfo.to, mailInfo.cc, mailInfo.bcc, mailInfo.title, html);
-                    }, 1000); // give 1 second for recalc the formula data
-                }
-            });
+            await loadFileData(content, today);
+            if (mail) {
+                window.setTimeout(function () { //
+                    let mailInfo = config.mailInfo;
+                    let html = workbook.getHtmlForOutlook(config.mailInfo.chapterList);
+                    sendMail(mailInfo.to, mailInfo.cc, mailInfo.bcc, mailInfo.title, html);
+                }, 1000); // give 1 second for recalc the formula data
+            }
         });
     }
     $(document).ready(function () {
