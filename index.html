@@ -11,6 +11,7 @@
     <script type="text/javascript" src="dist/drag.1.0.js"></script>
     <script src="http://code.highcharts.com/highcharts.js"></script>
     <script src="./dist/utils.js"></script>
+    <script src="./dist/angular.min.js"></script>
     <script type="text/javascript" src="js/socialcalcconstants.js"></script>
     <script type="text/javascript" src="js/socialcalc-3.js"></script>
     <script type="text/javascript" src="js/socialcalctableeditor.js"></script>
@@ -24,7 +25,7 @@
     <link rel="stylesheet" type="text/css" href="css/index.css">
     <link rel="stylesheet" type="text/css" href="css/reset.css">
 </head>
-<body>
+<body ng-app="mainApp" ng-controller="mainController">
 <div class="container-fluid">
     <div class="first-part-actions" id="first-part-actions">
         <div class="btn-group btn-group-sm">
@@ -61,12 +62,12 @@
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                 </div>
                 <div class="modal-body">
-                    <input placeholder="填写用户名" id="inputOwner"/>
-                    <input placeholder="填写文件名" id="inputFileName"/>
+                    <input placeholder="填写用户名" ng-model="current.config.owner"/>
+                    <input placeholder="填写文件名" ng-model="current.config.fileName"/>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                    <button type="button" class="btn btn-primary" id="buttonSaveFile">保存</button>
+                    <button type="button" class="btn btn-primary" ng-click="current.saveModel.saveFile()">保存</button>
                 </div>
             </div>
         </div>
@@ -191,13 +192,13 @@
                     <div class="row">
                         <div class="col-md-2">Sheet</div>
                         <div class="col-md-8">
-                            <select id="selectSheet" class="form-control"></select>
+                            <select class="form-control" ng-model="current.dataSource.selected.sheetName"></select>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-2">Pos</div>
                         <div class="col-md-2">
-                            <input placeholder="-1" type="number" id="inputPos"/>
+                            <input placeholder="-1" type="number" ng-model="current.dataSource.selected.pos"/>
                         </div>
                         <div class="col-md-4">
                             <p>-1表示增加,否则为替换</p>
@@ -206,27 +207,29 @@
                     <div class="row">
                         <div class="col-md-2">Range</div>
                         <div class="col-md-2">
-                            <input placeholder="A1:B10" id="inputRange"/>
+                            <input placeholder="A1:B10" ng-model="current.dataSource.selected.range"/>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-2">Remote</div>
                         <div class="col-md-8">
                             <div>
-                                <select id="selectRemoteDataSource" class="form-control"></select>
+                                <select class="form-control" ng-change="current.dataSource.select(item)" ng-options="item for item in current.dataSource.getList()">
+                                    <option value="{{item.source}}">{{item.table}}</option>
+                                </select>
                             </div>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-2">Source</div>
                         <div class="col-md-10">
-                            <input placeholder="k1=v1&k2=v2" id="inputRef"/>
+                            <input placeholder="k1=v1&k2=v2" ng-model="current.dataSource.selected.ref"/>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-2"></div>
                         <div class="col-md-2">
-                            <input type="button" class="btn-success" id="inputSetDataSource" value="save"/>
+                            <input type="button" class="btn-success" ng-click="current.dataSource.add()" value="add"/>
                         </div>
                     </div>
                     <br/>
@@ -239,7 +242,7 @@
                                     <th>edit</th>
                                 </tr>
                             </thead>
-                            <tbody id="dataSourceList">
+                            <tbody id="dataSourceList" ng-repeat="item in current.config">
                             </tbody>
                         </table>
                     </div>
@@ -254,8 +257,13 @@
     <div>
         <div class="tab-content container-fluid" id="sheet"></div>
         <ul class="nav nav-tabs" id="nav-tabs" role="tablist">
-            <!-- <li class="nav-item"></li> -->
-            <li class="add-sheet" id="add-sheet-btn">
+            <li class="nav-item" ng-repeat="sheetName in current.sheetTab.list">
+                <a class="nav-link" data-toggle="tab" href="#"
+                    ng-class="active:current.sheetTab.selectedName==sheetName"
+                    ng-click="current.sheetTab.select($index)"
+                    ng-dblclick="current.sheetTab.rename($index)">{{sheetName}}</a>
+            </li>
+            <li class="add-sheet" ng-click="current.sheetTab.add()">
                 <img src="./images/add-sheet.png" >
             </li>
         </ul>
@@ -269,8 +277,10 @@
     
 </div>
 <script>
-    let sheetIdGenerator = new SheetIdGenerator();
-    let workbook = new SocialCalc.Workbook("sheet", "formula");
+let sheetIdGenerator = new SheetIdGenerator();
+let workbook = new SocialCalc.Workbook("sheet", "formula");
+angular.module('mainApp', [])
+.controller('mainController', function($scope, $http) {
     let config = {
         fileName: "",
         owner: "",
@@ -282,40 +292,158 @@
             chapterList: [], // {"title":"","sheetName":""}
         }
     };
-    function addNewSheetTab (sheetInfo) {
-        const sheetId = sheetIdGenerator.nextId();
-        if (!sheetInfo) {
-            sheetInfo = workbook.addNewSheet();
-            workbook.selectSheet(sheetInfo.name);
-        }
-        const newLi = $('<li class="nav-item"><a class="nav-link" data-toggle="tab" href="#'+ sheetId +'" id="'+ sheetId +'">'+ sheetInfo.name +'</a></li>');
-        $("#add-sheet-btn").before(newLi);
-        addSheetTabMethod(sheetId);
-    }
 
-    $("#add-sheet-btn").click(function(e) {
-        addNewSheetTab();
-    });
+    let sheetTab = (function() {
+        let sheetTabList = [];
+        let selectedSheetName = "";
 
-    function addSheetTabMethod (sheetId) {
-        let id = "#" + sheetId;
-        $(id).dblclick(function () {
-            const oldName = $(id).text();
-            const newName = window.prompt("重命名sheet: " + oldName, oldName);
-            if (newName && workbook.renameSheet(oldName, newName)) {
-                $(id).text(newName);
+        function add (sheetName) {
+            if (!sheetName) {
+                let sheetInfo = workbook.addNewSheet();
+                workbook.selectSheet(sheetInfo.name);
+                sheetName = sheetInfo.name;
             }
-        });
-        $(id).click(function () {
-            const oldName = $(id).text();
-            workbook.selectSheet(oldName);
-        });
-    }
+            sheetTabList.push(sheetName);
+            selectedSheetName = sheetName;
+        }
 
-    $(document).on('click', ".nav-item", function(){
-        const id = $(this).children().attr("ID")
-        workbook.selectSheet(id, "sheet", "formula");
-    });
+        function rename (index) {
+            let tab = sheetTabList[index];
+            const oldName = $(id).text();
+            const newName = window.prompt("重命名sheet: " + tab.name, tab.name);
+            if (newName && workbook.renameSheet(oldName, newName)) {
+                tab.name = newName;
+            }
+        }
+
+        function select (index) {
+            let tab = sheetTabList[index];
+            workbook.selectSheet(tab.name);
+        }
+
+        return {
+            list:[],
+            selectedName: "",
+            add: add,
+            rename: rename,
+            select: select,
+        }
+    })();
+
+    let saveModel = (function() {
+        function saveFile() {
+            if (!config.fileName) {
+                alert("please input file name");
+                return;
+            }
+            if (!config.owner) {
+                alert("please owner name");
+                return;
+            }
+            let content = workbook.generateFile();
+            $http({
+                method: 'POST',
+                url: "/api/file",
+                data: {
+                    fileName: fileName,
+                    owner: owner,
+                    content: content,
+                    mailInfo: JSON.stringify(config.mailInfo),
+                }
+            }).then(function (response) {
+                console.log(response);
+                alert("OK");
+                document.title = fileName;
+            }, function (response) {
+                alert("error: " + response);
+            });
+        }
+
+        return {
+            saveFile: saveFile,
+        };
+    })();
+
+    let dataSource = (function() {
+        let list = null;
+        let selected = {
+            sheetName: "",
+            pos: -1,
+            range: "",
+            ref:""
+        }
+
+        function getList () {
+            if (list) {
+                return list;
+            }
+            let url = "/api/stat/table/info?offset=0&size=100";
+            $http({
+                method: 'GET',
+                url: url,
+            }).then(function (response) {
+                console.log(response);
+                let data = JSON.parse(jsonstr);
+                if (data.code != 0) {
+                    alert("failed to load " + url);
+                    return;
+                }
+                list = data.result;
+            }, function (response) {
+                alert("error: " + response);
+            });
+        }
+
+        function select (item) {
+            selected.ref = item.source;
+        }
+
+        function add () {
+            let range = $("#inputRange").val();
+            let pos = parseInt($("#inputPos").val());
+            let ref = $("#inputRef").val();
+            let cr2 = selected.range.split(':');
+            if (cr2.length != 2) {
+                alert("range is invalid:" + range);
+                return;
+            }
+            let sheetIndex = workbook.getIndexBySheetName(sheetTab.selectedName);
+            let sheet = workbook.sheetInfoList[sheetIndex].sheet;
+            let info = workbook.addRemoteInfo(sheet, cr2[0], cr2[1], ref, pos);
+            await loadRemoteData(sheet, info, config.today); // TODO
+            workbook.refresh();
+            showDataSourceList(sheetIndex);
+        }
+
+        return {
+            list: list,
+            selected: selected,
+            getList: getList,
+            select: select,
+        }
+    })();
+
+    $scope.current = (function () {
+        return {
+            config: config,
+            sheetTab: sheetTab,
+            saveModel: saveModel,
+            dataSource: dataSource,
+        }
+    })();
+});
+
+    let config = {
+        fileName: "",
+        owner: "",
+        today: "",
+        mailInfo: {
+            period: 1,
+            startTime: new Date().getTime(),
+            title: "",
+            chapterList: [], // {"title":"","sheetName":""}
+        }
+    };
 
     $("#aDownloadFile").click(function (e) {
         let str = workbook.generateFile();
