@@ -236,7 +236,9 @@ SocialCalc.Workbook = function(parentId, formulaId) {
 
     this.resize = function () {
         const size = caclEditorSize();
-        this.editor.ResizeTableEditor(size.width, size.height);
+        if (this.editor) {
+            this.editor.ResizeTableEditor(size.width, size.height);
+        }
     }
 
     this.getHtmlForOutlook = function (chapterList) {

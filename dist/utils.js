@@ -19,17 +19,16 @@ Date.prototype.format = function(fmt) {
     return fmt;
 }
 
-function SheetIdGenerator () {
-    let sheetIdMap = {};
-    let startId = 0;
-    this.nextId = function () {
-        while (true) {
-            ++startId;
-            let name = "sheet" + startId;
-            if (!sheetIdMap[name]) {
-                sheetIdMap[name] = 1;
-                return name;
-            }
-        }
-    }
+function getValueFromQuery (name) {
+    let reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+    let r = window.location.search.substr(1).match(reg);
+    return r != null ? decodeURIComponent(r[2]) : null;
+}
+
+function transformRequest (obj) {
+  var str = [];
+  for (var s in obj) {
+    str.push(encodeURIComponent(s) + "=" + encodeURIComponent(obj[s]));
+  }
+  return str.join("&");
 }

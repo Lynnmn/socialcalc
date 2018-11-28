@@ -28,23 +28,23 @@
 <body ng-app="mainApp" ng-controller="mainController">
 <div class="container-fluid">
     <div class="first-part-actions" id="first-part-actions">
-        <div class="btn-group btn-group-sm">
+        <div class="btn-group btn-group-sm" id="toolbar">
             <a href="index.html" target="_blank">
                 <img class="icon-btn" src="./images/create.png" title="新建项目">
             </a>
-            <img class="icon-btn" src="./images/save.png" title="保存至服务器" data-toggle="modal" data-target="#modelSaveToServer" id="imgSave">
+            <img class="icon-btn" src="./images/save.png" title="保存至服务器" data-toggle="modal" data-target="#modelSaveToServer" ng-click="$.moveFocus()">
             <label class="input-file">
-                <input type="file" name="inputLocalFile" id="inputLocalFile" value="" multiple="multiple"/>
+                <input type="file" onchange="angular.element(this).scope().loadLocalFile(this)" multiple="multiple"/>
                 <img class="icon-btn" src="./images/input_file.png" title="选择文件" >
             </label>
-            <img class="icon-btn" src="./images/import.png" title="导入远程文档" data-toggle="modal" data-target="#modelDataSource" id="imgLoad">
-            <img class="icon-btn" src="./images/share.png" title="分享链接" data-toggle="modal" data-target="#modelShareLink" id="show-share-link" >
-            <a href="" download="a.txt" id="aDownloadFile">
+            <img class="icon-btn" src="./images/import.png" title="导入远程文档" data-toggle="modal" data-target="#modelDataSource" ng-click="$.moveFocus()">
+            <img class="icon-btn" src="./images/share.png" title="分享链接" data-toggle="modal" data-target="#modelShareLink" ng-click="$.moveFocus()">
+            <a ng-href="{{$.downloadModel.info.fileUri}}" ng-attr-download="{{$.downloadModel.info.fileName}}" ng-click="$.downloadModel.download()">
                 <img class="icon-btn" src="./images/download.png" title="下载excel文档">
             </a>
-            <img class="icon-btn" src="./images/mail.png" title="邮件设置" data-toggle="modal" data-target="#modelMail" id="imgMail" >
+            <img class="icon-btn" src="./images/mail.png" title="邮件设置" data-toggle="modal" data-target="#modelMail" ng-click="$.moveFocus()">
             <div class="action-btns"></div>
-            <img class="icon-btn" src="./images/chart.png" title="插入图表" data-toggle="modal" data-target="#modelChart" id="modelChartIcon">
+            <img class="icon-btn" src="./images/chart.png" title="插入图表" data-toggle="modal" data-target="#modelChart" id="modelChartIcon" ng-click="$.moveFocus()">
         </div>
         
         <div>
@@ -62,12 +62,12 @@
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                 </div>
                 <div class="modal-body">
-                    <input placeholder="填写用户名" ng-model="current.config.owner"/>
-                    <input placeholder="填写文件名" ng-model="current.config.fileName"/>
+                    <input placeholder="填写用户名" ng-model="$.config.owner"/>
+                    <input placeholder="填写文件名" ng-model="$.config.fileName"/>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                    <button type="button" class="btn btn-primary" ng-click="current.saveModel.saveFile()">保存</button>
+                    <button type="button" class="btn btn-primary" ng-click="$.saveModel.saveFile()">保存</button>
                 </div>
             </div>
         </div>
@@ -77,7 +77,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <span class="modal-title" id="myModalLabel1">
+                    <span class="modal-title">
                         插入图表
                     </span>
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
@@ -112,56 +112,61 @@
                     <br/>
                     <div>
                         <label>收件列表</label>
-                        <input placeholder="收件人:aaa@qq.com,bbb@qq.com" id="inputTo" value="95813422@qq.com"/>
+                        <input placeholder="收件人:aaa@qq.com,bbb@qq.com" ng-model="$.config.mailInfo.to"/>
                     </div>
                     <div>
                         <label>抄送列表</label>
-                        <input placeholder="抄送:aaa@qq.com,bbb@qq.com" id="inputCc"/>
+                        <input placeholder="抄送:aaa@qq.com,bbb@qq.com" ng-model="$.config.mailInfo.cc"/>
                     </div>
                     <div>
                         <label>密送列表</label>
-                        <input placeholder="密送:aaa@qq.com,bbb@qq.com" id="inputBcc"/>
+                        <input placeholder="密送:aaa@qq.com,bbb@qq.com" ng-model="$.config.mailInfo.bcc"/>
                     </div>
                     <div>
                         <label>邮件标题</label>
-                        <input placeholder="title:" id="inputTitle" value="test for outlook"/>
+                        <input placeholder="title:" ng-model="$.config.mailInfo.title"/>
                     </div>
                     <hr/>
                     <div>填写邮件章节信息</div>
                     <br/>
-                    <div id="divChapter">
+                    <div class="row" ng-repeat="m in $.config.mailInfo.chapterList">
+                        <p class="col-1">{{$index+1}}.</p>
+                        <p class="col-5">title: {{m.title}}</p>
+                        <p class="col-5">sheet: {{m.sheetName}}</p>
+                        <div class="col-1">
+                            <button class="btn btn-primary btn-sm" ng-click="$.mailModel.deleteChapter($index)">X</button>
+                        </div>
                     </div>
                     <div class="row">
                         <div class="col-1"><p>选择</p></div>
-                        <input class="col-5" id="inputChapterTitle" type="text"/>
-                        <select class="col-5" id="selectChapterSheetName"></select>
-                        <div class="col-1"><button class="btn btn-default btn-sm" id="buttonSaveChapter">+</button></div>
+                        <input class="col-5" ng-model="$.mailModel.selected.title" type="text"/>
+                        <select class="col-5" ng-model="$.mailModel.selected.sheetInfo" ng-options="m.name for m in $.sheetInfoList"></select>
+                        <div class="col-1"><button class="btn btn-default btn-sm" ng-click="$.mailModel.addChapter()">+</button></div>
                     </div>
                     <hr/>
                     <div>邮件调度信息</div>
                     <br/>
                     <div>
                         <label>开始时间</label>
-                        <input type="datetime-local" id="inputDateTime" value="2018-11-01T15:00:00"/>
+                        <input type="datetime-local" ng-model="$.config.mailInfo.startTime" value="2018-11-01T15:00:00"/>
                     </div>
                     <div>
                         <label>每隔几天</label>
-                        <input type="number" id="inputPeriod" value="1"/>
+                        <input type="number" ng-model="$.config.mailInfo.period"/>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                    <button type="button" class="btn btn-primary" id="buttonSendMail" data-dismiss="modal">发送</button>
-                    <button type="button" class="btn btn-primary" id="buttonSaveMailInfo">保存</button>
+                    <button type="button" class="btn btn-primary" ng-click="$.mailModel.send()" data-dismiss="modal">发送</button>
                 </div>
             </div>
         </div>
     </div>
-    <div class="modal fade" id="modelShareLink" tabindex="-1" role="dialog" aria-labelledby="myModalLabel1" aria-hidden="true">
+    <div class="modal fade" id="modelShareLink" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <span class="modal-title" id="myModalLabel1">
+                    <span class="modal-title">
                         分享链接
                     </span>
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
@@ -169,7 +174,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <a id="aShareLink" href="#"></a>
+                    <a ng-href="{{$.shareModel.getUrl()}}">{{$.shareModel.getUrl()}}</a>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
@@ -177,14 +182,14 @@
             </div><!-- /.modal-content -->
         </div><!-- /.modal -->
     </div>
-    <div class="modal fade" id="modelDataSource" tabindex="-1" role="dialog" aria-labelledby="myModalLabelDataSource" aria-hidden="true">
+    <div class="modal fade" id="modelDataSource" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <span class="modal-title" id="myModalLabelDataSource">
+                    <span class="modal-title">
                         管理数据源
                     </span>
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    <button type="button" class="close" data-dismiss="modal">
                         &times;
                     </button>
                 </div>
@@ -192,13 +197,16 @@
                     <div class="row">
                         <div class="col-md-2">Sheet</div>
                         <div class="col-md-8">
-                            <select class="form-control" ng-model="current.dataSource.selected.sheetName"></select>
+                            <select class="form-control"
+                                    ng-model="$.dataSourceModel.selected.sheetInfo"
+                                    ng-options="m.name for m in $.sheetInfoList">
+                            </select>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-2">Pos</div>
                         <div class="col-md-2">
-                            <input placeholder="-1" type="number" ng-model="current.dataSource.selected.pos"/>
+                            <input placeholder="-1" type="number" ng-model="$.dataSourceModel.selected.pos"/>
                         </div>
                         <div class="col-md-4">
                             <p>-1表示增加,否则为替换</p>
@@ -207,15 +215,17 @@
                     <div class="row">
                         <div class="col-md-2">Range</div>
                         <div class="col-md-2">
-                            <input placeholder="A1:B10" ng-model="current.dataSource.selected.range"/>
+                            <input placeholder="A1:B10" ng-model="$.dataSourceModel.selected.range"/>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-2">Remote</div>
                         <div class="col-md-8">
                             <div>
-                                <select class="form-control" ng-change="current.dataSource.select(item)" ng-options="item for item in current.dataSource.getList()">
-                                    <option value="{{item.source}}">{{item.table}}</option>
+                                <select class="form-control"
+                                        ng-change="$.dataSourceModel.select(m)"
+                                        ng-model="$.dataSourceModel.selected.source"
+                                        ng-options="m.source as m.table for m in $.dataSourceModel.list">
                                 </select>
                             </div>
                         </div>
@@ -223,13 +233,13 @@
                     <div class="row">
                         <div class="col-md-2">Source</div>
                         <div class="col-md-10">
-                            <input placeholder="k1=v1&k2=v2" ng-model="current.dataSource.selected.ref"/>
+                            <input placeholder="k1=v1&k2=v2" ng-model="$.dataSourceModel.selected.ref"/>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-2"></div>
                         <div class="col-md-2">
-                            <input type="button" class="btn-success" ng-click="current.dataSource.add()" value="add"/>
+                            <input type="button" class="btn-success" ng-click="$.dataSourceModel.add()" value="add"/>
                         </div>
                     </div>
                     <br/>
@@ -242,7 +252,13 @@
                                     <th>edit</th>
                                 </tr>
                             </thead>
-                            <tbody id="dataSourceList" ng-repeat="item in current.config">
+                            <tbody>
+                                <tr ng-repeat="item in $.dataSourceModel.selected.sheetInfo.sheet.remote">
+                                    <td>{{item.coord1 + ":" + item.coord2}}</td>
+                                    <td>{{item.ref}}</td>
+                                    <td><button class="btn btn-default" ng-click="$.dataSourceModel.edit($index)">edit</button></td>
+                                    <td><button class="btn btn-default" ng-click="$.dataSourceModel.remove($index)">X</button></td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -257,13 +273,13 @@
     <div>
         <div class="tab-content container-fluid" id="sheet"></div>
         <ul class="nav nav-tabs" id="nav-tabs" role="tablist">
-            <li class="nav-item" ng-repeat="sheetName in current.sheetTab.list">
+            <li class="nav-item" ng-repeat="sheetName in $.sheetTab.list">
                 <a class="nav-link" data-toggle="tab" href="#"
-                    ng-class="active:current.sheetTab.selectedName==sheetName"
-                    ng-click="current.sheetTab.select($index)"
-                    ng-dblclick="current.sheetTab.rename($index)">{{sheetName}}</a>
+                    ng-class="{active:$.sheetTab.isSelected($index)}"
+                    ng-click="$.sheetTab.select($index)"
+                    ng-dblclick="$.sheetTab.rename($index)">{{sheetName}}</a>
             </li>
-            <li class="add-sheet" ng-click="current.sheetTab.add()">
+            <li class="add-sheet" ng-click="$.sheetTab.add()">
                 <img src="./images/add-sheet.png" >
             </li>
         </ul>
@@ -277,60 +293,86 @@
     
 </div>
 <script>
-let sheetIdGenerator = new SheetIdGenerator();
 let workbook = new SocialCalc.Workbook("sheet", "formula");
 angular.module('mainApp', [])
-.controller('mainController', function($scope, $http) {
+.config(['$compileProvider', function($compileProvider) {
+    $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|tel|file|sms|data):/);
+}])
+.controller('mainController', function($scope, $http, $window) {
     let config = {
         fileName: "",
         owner: "",
         today: "",
         mailInfo: {
             period: 1,
-            startTime: new Date().getTime(),
+            startTime: new Date(),
             title: "",
-            chapterList: [], // {"title":"","sheetName":""}
+            chapterList: [], // {"title":"","sheetName":""},
+            to: "",
+            cc: "",
+            bcc: "",
         }
     };
 
-    let sheetTab = (function() {
-        let sheetTabList = [];
-        let selectedSheetName = "";
+    let sheetTab = function () {
+        let tabList = [];
+        let selected = {
+            index: 0
+        };
+
+        function select (index) {
+            let name = tabList[index];
+            selected.index = index;
+            workbook.selectSheet(name);
+        }
 
         function add (sheetName) {
             if (!sheetName) {
                 let sheetInfo = workbook.addNewSheet();
-                workbook.selectSheet(sheetInfo.name);
                 sheetName = sheetInfo.name;
+                workbook.selectSheet(sheetName);
             }
-            sheetTabList.push(sheetName);
-            selectedSheetName = sheetName;
+            tabList.push(sheetName);
+            workbook.selectSheet(sheetName);
+            select(tabList.length - 1);
         }
 
         function rename (index) {
-            let tab = sheetTabList[index];
-            const oldName = $(id).text();
-            const newName = window.prompt("重命名sheet: " + tab.name, tab.name);
-            if (newName && workbook.renameSheet(oldName, newName)) {
-                tab.name = newName;
+            let name = tabList[index];
+            const newName = window.prompt("重命名sheet: " + name, name);
+            if (newName && workbook.renameSheet(name, newName)) {
+                tabList[index] = newName;
             }
         }
 
-        function select (index) {
-            let tab = sheetTabList[index];
-            workbook.selectSheet(tab.name);
+        function isSelected (index) {
+            return selected.index == index;
+        }
+
+        function remove (index) {
+            let name = tabList[index];
+            workbook.removeSheet(name);
+            tabList.splice(index, 1);
+                list.push(response.data.result);
+            if (tabList.length == 0) {
+                selected.index = -1;
+            } else if (selected.index >= tabList.length) {
+                selected.index = tabList.length - 1;
+            }
         }
 
         return {
-            list:[],
-            selectedName: "",
+            list: tabList,
+            selected: selected,
             add: add,
             rename: rename,
             select: select,
+            remove: remove,
+            isSelected: isSelected,
         }
-    })();
+    }();
 
-    let saveModel = (function() {
+    let saveModel = function() {
         function saveFile() {
             if (!config.fileName) {
                 alert("please input file name");
@@ -341,19 +383,32 @@ angular.module('mainApp', [])
                 return;
             }
             let content = workbook.generateFile();
+            let mailInfo = angular.copy(config.mailInfo);
+            if (mailInfo.startTime) {
+                mailInfo.startTime = mailInfo.startTime.getTime();
+            } else {
+                mailInfo.startTime = 0;
+            }
+
             $http({
                 method: 'POST',
                 url: "/api/file",
                 data: {
-                    fileName: fileName,
-                    owner: owner,
+                    fileName: config.fileName,
+                    owner: config.owner,
                     content: content,
-                    mailInfo: JSON.stringify(config.mailInfo),
-                }
+                    mailInfo: JSON.stringify(mailInfo),
+                },
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                transformRequest: transformRequest
             }).then(function (response) {
-                console.log(response);
-                alert("OK");
-                document.title = fileName;
+                if (response.data.code == 0) {
+                    alert("OK");
+                    document.title = fileName;
+                } else {
+                    console.log(response);
+                    alert(response.data.message);
+                }
             }, function (response) {
                 alert("error: " + response);
             });
@@ -362,526 +417,299 @@ angular.module('mainApp', [])
         return {
             saveFile: saveFile,
         };
-    })();
+    }();
 
-    let dataSource = (function() {
-        let list = null;
+    let mailModel = function() {
         let selected = {
-            sheetName: "",
-            pos: -1,
-            range: "",
-            ref:""
+            title: "",
+            sheetInfo: null,
         }
 
-        function getList () {
-            if (list) {
-                return list;
+        function addChapter () {
+            if (!selected.sheetInfo) {
+                alert('请设置章节对应表单');
+                return;
             }
-            let url = "/api/stat/table/info?offset=0&size=100";
+            let chapter = {
+                title: selected.title || selected.sheetInfo.name,
+                sheetName: selected.sheetInfo.name,
+            };
+            config.mailInfo.chapterList.push(chapter);
+        }
+
+        function deleteChapter (index) {
+            config.mailInfo.chapterList.splice(index, 1);
+        }
+
+        function send () {
+            if (!config.mailInfo.title) {
+                alert("请设置邮件标题");
+                return;
+            }
+            if (!config.mailInfo.to && !config.mailInfo.cc && !config.mailInfo.bcc) {
+                alert("请设置至少一个收件人");
+                return;
+            }
+            let html = workbook.getHtmlForOutlook(config.mailInfo.chapterList);
             $http({
-                method: 'GET',
-                url: url,
+                method: 'POST',
+                url: "/api/mail",
+                data: {
+                    title: config.mailInfo.title,
+                    to: config.mailInfo.to,
+                    cc: config.mailInfo.cc,
+                    bcc: config.mailInfo.bcc,
+                    body: html
+                },
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                transformRequest: transformRequest,
             }).then(function (response) {
-                console.log(response);
-                let data = JSON.parse(jsonstr);
-                if (data.code != 0) {
-                    alert("failed to load " + url);
-                    return;
+                if (response.data.code == 0) {
+                    alert("OK");
+                } else {
+                    console.log(response);
+                    alert(response.data.message);
                 }
-                list = data.result;
             }, function (response) {
                 alert("error: " + response);
             });
         }
 
-        function select (item) {
-            selected.ref = item.source;
+        return {
+            selected: selected,
+            send: send,
+            addChapter: addChapter,
+            deleteChapter: deleteChapter
+        }
+    }();
+
+    let dataSourceModel = function() {
+        let list = [];
+        let selected = {
+            sheetInfo: {},
+            pos: -1,
+            range: "",
+            ref:"",
+            source: "",
         }
 
-        function add () {
-            let range = $("#inputRange").val();
-            let pos = parseInt($("#inputPos").val());
-            let ref = $("#inputRef").val();
+        function initList () {
+            let url = "/api/stat/table/info?offset=0&size=100";
+            $http({
+                method: 'GET',
+                url: url,
+            }).then(function (response) {
+                if (response.data.code != 0) {
+                    console.log(response);
+                    alert(response.data.message);
+                    return;
+                }
+                Object.assign(list, response.data.result);
+            }, function (response) {
+                console.log("error: " + response);
+            });
+        }
+
+        function select () {
+            selected.ref = selected.source;
+        }
+
+        async function add () {
             let cr2 = selected.range.split(':');
             if (cr2.length != 2) {
-                alert("range is invalid:" + range);
+                alert("range is invalid:" + selected.range);
                 return;
             }
-            let sheetIndex = workbook.getIndexBySheetName(sheetTab.selectedName);
-            let sheet = workbook.sheetInfoList[sheetIndex].sheet;
-            let info = workbook.addRemoteInfo(sheet, cr2[0], cr2[1], ref, pos);
-            await loadRemoteData(sheet, info, config.today); // TODO
+            let sheet = selected.sheetInfo.sheet;
+            let info = workbook.addRemoteInfo(sheet, cr2[0], cr2[1], selected.ref, selected.pos);
+            await dataModel.loadRemoteData(sheet, info, config.today);
             workbook.refresh();
-            showDataSourceList(sheetIndex);
+        }
+
+        function edit (index) {
+            let item = selected.sheetInfo.sheet.remote[index];
+            selected.pos = index;
+            selected.range = item.coord1 + ":" + item.coord2,
+            selected.ref = item.ref;
+        }
+
+        function remove (index) {
+            if (!confirm('是否要刪除"' + selected.sheetInfo.name + '"的一条数据源?')) {
+                return;
+            }
+            selected.sheetInfo.sheet.remote.splice(index, 1);
         }
 
         return {
             list: list,
             selected: selected,
-            getList: getList,
+            initList: initList,
             select: select,
+            add: add,
+            edit: edit,
+            remove: remove
         }
-    })();
+    }();
 
-    $scope.current = (function () {
+    let downloadModel = (function() {
+        let info = {
+            fileName: "",
+            fileUri: "",
+        }
+
+        function download () {
+            info.fileName = config.fileName || "未命名文件";
+            let str = workbook.generateFile();
+            info.fileUri = "data:text/plain;charset=utf-8," + str;
+        }
+
         return {
-            config: config,
-            sheetTab: sheetTab,
-            saveModel: saveModel,
-            dataSource: dataSource,
+            info: info,
+            download: download,
         }
     })();
-});
 
-    let config = {
-        fileName: "",
-        owner: "",
-        today: "",
-        mailInfo: {
-            period: 1,
-            startTime: new Date().getTime(),
-            title: "",
-            chapterList: [], // {"title":"","sheetName":""}
+    let shareModel = function () {
+        function getUrl() {
+            return window.location.origin + window.location.pathname
+                + "?fileName=" + config.fileName + "&owner=" + config.owner;
         }
-    };
 
-    $("#aDownloadFile").click(function (e) {
-        let str = workbook.generateFile();
-        alert(str);
-        let fileStr = "data:text/plain;charset=utf-8," + str;
-        $('#aDownloadFile').attr('download', config.fileName || "未命名文件")
-            .attr('href',fileStr);
-    });
-    $("#inputLocalFile").change(function (e) {
-        for (let i = 0; i < this.files.length; i++) {
-            let file = this.files[i];
-            let fr = new FileReader();
-            fr.readAsText(file);
-            fr.onload = function () {
-                loadFileData(this.result, config.today);
+        return {
+            getUrl: getUrl,
+        }
+    }();
+
+    let dataModel = function () {
+        async function loadRemoteData (sheet, info, today) {
+            if (sheet.remote.length == 0) {
+                return;
             }
-        }
-    });
-    async function loadRemoteData (sheet, info, today) {
-        if (sheet.remote && sheet.remote.length > 0) {
             let url = "/api/stat?" + info.ref;
             if (today) {
                 url += "&today=" + today;
             }
-            return new Promise(function (resolve, reject) {
-                $.get(url, function (jsonstr, status) {
-                    // TODO reject if (status != 200)
-                    let data = JSON.parse(jsonstr);
-                    if (data.code != 0) {
-                        alert("failed to load " + url);
-                        resolve();
-                        return;
+            await new Promise(function (resolve, reject) {
+                $http({method: 'GET', url: url}).then(async function (response) {
+                    if (response.data.code != 0) {
+                        console.log("error: " + response);
+                        alert("failed to load remote data:" + url);
                     }
-                    workbook.updateRemoteData(sheet, info, data.result);
+                    workbook.updateRemoteData(sheet, info, response.data.result);
                     resolve();
+                }, async function () {
+                    console.log("error: " + response);
+                    reject();
                 });
-            })
+            });
         }
-    }
-    $("#imgLoad").click(function () {
-        let selectHtml = "";
-        for (let i = 0; i < workbook.sheetInfoList.length; ++i) {
-            let sheetInfo = workbook.sheetInfoList[i];
-            selectHtml += '<option value="' + sheetInfo.name + '">' + sheetInfo.name + '</option>';
-        }
-        $("#selectSheet").html(selectHtml);
-        showDataSourceList(0);
-        if (workbook.editor.range.hasrange) {
-            let range = workbook.editor.range;
-            let cr2 = SocialCalc.crToCoord(range.left, range.top) + ":" + SocialCalc.crToCoord(range.right, range.bottom);
-            $("#inputRange").val(cr2);
-        }
-        $("#inputPos").val("-1");
-        let obj = document.getElementById("modelDataSource");
-        SocialCalc.Keyboard.passThru = obj;
-        obj.focus();
-    });
-    $("#selectSheet").change(function () {
-        let sheetName = $("#selectSheet").val();
-        let sheetIndex = workbook.getIndexBySheetName(sheetName);
-        showDataSourceList(sheetIndex);
-    });
-    function showDataSourceList (sheetIndex) {
-        let dataSourceHtml = "";
-        if (workbook.sheetInfoList.length > sheetIndex) {
-            let sheetInfo = workbook.sheetInfoList[sheetIndex];
-            let remote = sheetInfo.sheet.remote;
-            if (remote) {
-                for (let j = 0; j < remote.length; ++j) {
-                    let source = remote[j];
-                    dataSourceHtml += '<tr><td>'
-                        + source.coord1 + ':' + source.coord2 + '</td><td>'
-                        + source.ref + '</td><td>'
-                        + '<button class="btn btn-default" onclick="editDataSource(' + sheetIndex + ',' + j + ')">edit</button></td>'
-                        + '<td><button class="btn btn-default" onclick="removeDataSource(' + sheetIndex + ',' + j + ')">X</button></td></tr>';
+
+        async function loadFileData (fileData, today) {
+            let list = JSON.parse(fileData);
+            for (let i = 0; i < list.length; ++i) {
+                let info = list[i];
+                let sheetInfo = workbook.addNewSheet(info.name, info.content);
+                sheetTab.add(sheetInfo.name);
+                for (let j = 0; j < sheetInfo.sheet.remote.length; ++j) {
+                    await loadRemoteData(sheetInfo.sheet, sheetInfo.sheet.remote[j], today);
                 }
             }
+            workbook.recalcAllSheet();
+            workbook.refresh();
         }
-        $("#dataSourceList").html(dataSourceHtml);
-        fetchTableList();
-    }
-    function removeDataSource (sheetIndex, index) {
-        let sheetInfo = workbook.sheetInfoList[sheetIndex];
-        if (!confirm('是否要刪除"' + sheetInfo.name + '"的一条数据源?')) {
-            return;
-        }
-        let remote = sheetInfo.sheet.remote;
-        if (remote.length > index) {
-            remote.splice(index, 1);
-        }
-        let currentSheetName = $("#selectSheet").val();
-        let newSheetIndex = workbook.getIndexBySheetName(currentSheetName);
-        if (newSheetIndex == sheetIndex) {
-            showDataSourceList(newSheetIndex);
-        }
-    }
-    function editDataSource (sheetIndex, index) {
-        let sheetInfo = workbook.sheetInfoList[sheetIndex];
-        let source = sheetInfo.sheet.remote[index];
-        $("#inputRange").val(source.coord1 + ":" + source.coord2);
-        $("#inputRef").val(source.ref);
-        $("#inputPos").val(index);
-    }
-    $("#inputSetDataSource").click(async function () {
-        let range = $("#inputRange").val();
-        let pos = parseInt($("#inputPos").val());
-        let ref = $("#inputRef").val();
-        let cr2 = range.split(':');
-        if (cr2.length != 2) {
-            alert("range is invalid:" + range);
-            return;
-        }
-        let sheetIndex = workbook.getIndexBySheetName($("#selectSheet").val());
-        let sheet = workbook.sheetInfoList[sheetIndex].sheet;
-        let info = workbook.addRemoteInfo(sheet, cr2[0], cr2[1], ref, pos);
-        await loadRemoteData(sheet, info, config.today);
-        workbook.refresh();
-        showDataSourceList(sheetIndex);
-    });
-    $("#selectRemoteDataSource").click(function () {
-        $("#inputRef").val($("#selectRemoteDataSource").val());
-    });
-    function fetchTableList () {
-        function refreshRemoteDataSourceList () {
-            let html = "";
-            for (let i = 0; i < config.tableList.length; ++i) {
-                let info = config.tableList[i];
-                html += '<option value="' + info.source + '">' + info.table + '</option>';
+
+        function initFromUrlParam () {
+            let fileName = getValueFromQuery("fileName");
+            let owner = getValueFromQuery("owner");
+            let mail = getValueFromQuery("mail");
+            let today = getValueFromQuery("today");
+            if (!fileName || !owner) {
+                sheetTab.add();
+                return;
             }
-            $("#selectRemoteDataSource").html(html);
-        }
-        if (!config.tableList) {
-            let url = "/api/stat/table/info?offset=0&size=100";
-            $.get(url, function (jsonstr, status) {
-                let data = JSON.parse(jsonstr);
-                if (data.code != 0) {
-                    alert("failed to load " + url);
+            let url = "/api/file?fileName=" + fileName + "&owner=" + owner;
+            $http({method: 'GET', url: url}).then(async function (response) {
+                 if (response.data.code != 0) {
+                    console.log(response);
+                    alert(response.data.message);
                     return;
                 }
-                config.tableList = data.result;
-                refreshRemoteDataSourceList();
+                let data = response.data;
+                config.fileName = fileName;
+                config.owner = owner;
+                document.title = fileName;
+                if (today) {
+                    config.today = today;
+                }
+                if (data.result.mailInfo) {
+                    config.mailInfo = JSON.parse(data.result.mailInfo);
+                    config.mailInfo.startTime = new Date(config.mailInfo.startTime);
+                    if (typeof config.mailInfo.period !== "number") {
+                        config.mailInfo.period = parseInt(config.mailInfo.period);
+                    }
+                }
+                let content = data.result.content;
+                await loadFileData(content, today);
+                if (mail) {
+                    window.setTimeout(function () {
+                        mailModel.send();
+                    }, 1000); // give 1 second for recalc the formula data
+                }
+            }, function (response) {
+                console.log("error: " + response);
             });
-        } else {
-            refreshRemoteDataSourceList();
         }
+
+        return {
+            loadRemoteData: loadRemoteData,
+            loadFileData: loadFileData,
+            initFromUrlParam: initFromUrlParam,
+        }
+    }();
+
+    function getCurrentSheet() {
+        return workbook.getCurrentSheet();
     }
-    config.mailSetting = new function () {
-        // imgMail -> modelMail(tbodyChapter, inputChapterTitle, selectChapterSheetName, buttonSaveChapter, buttonSaveMailInfo)
-        function deleteChapter (i) {
-            config.mailInfo.chapterList.splice(i, 1);
-            renderChapter();
-        }
-        function saveChapter () {
-            let chapterTitle = $("#inputChapterTitle").val();
-            if (!chapterTitle) {
-                alert('请设置章节标题');
-                return;
-            }
-            let selectChapterSheetName = $("#selectChapterSheetName").val();
-            if (!selectChapterSheetName) {
-                alert('请设置章节对应表单');
-                return;
-            }
-            let chapter = {
-                title: chapterTitle,
-                sheetName: selectChapterSheetName
-            };
-            config.mailInfo.chapterList.push(chapter);
-            renderChapter();
-        }
-        function saveMailInfo () {
-            config.mailInfo.to = $("#inputTo").val();
-            config.mailInfo.cc = $("#inputCc").val();
-            config.mailInfo.bcc = $("#inputBcc").val();
-            config.mailInfo.title = $("#inputTitle").val();
-            config.mailInfo.startTime = new Date($("#inputDateTime").val()).getTime();
-            config.mailInfo.period = $("#inputPeriod").val();
-        }
-        function getChapterHtml () {
-            let html = "";
-            for (let i = 0; i < config.mailInfo.chapterList.length; ++i) {
-                let item = config.mailInfo.chapterList[i];
-                html += '<div class="row">';
-                html += '<p class="col-1">' + (i + 1) + '.</p>';
-                html += '<p class="col-5">title: ' + item.title + '</p>';
-                html += '<p class="col-5">sheet: ' + item.sheetName + '</p>';
-                html += '<div class="col-1"><button class="btn btn-primary btn-sm" onclick="config.mailSetting.deleteChapter(' + i + ')">X</button></div>';
-                // html += '<p>' + item.title + '[' + item.sheetName +']</p></div>';
-                html += '</div>';
-            }
-            return html;
-        }
-        function renderSelectChapterSheetName () {
-            let html = '<option value=""></option>';
-            for (let i = 0; i < workbook.sheetInfoList.length; ++i) {
-                let sheetInfo = workbook.sheetInfoList[i];
-                html += '<option value="' + sheetInfo.name + '">' + sheetInfo.name + '</option>';
-            }
-            $("#selectChapterSheetName").html(html);
-            return html;
-        }
-        function renderChapter () {
-            let html = getChapterHtml();
-            $("#divChapter").html(html);
-        }
-        function init () {
-            if (!config.mailInfo) {
-                config.mailInfo = {
-                    to: "",
-                    cc: "",
-                    bcc: "",
-                    title: "",
-                    period: 0,
-                    startTime: 0,
-                    chapterList:[],
-                };
-            }
-            if (!config.mailInfo.chapterList) {
-                config.mailInfo.chapterList = [];
-            }
-            $("#inputTo").val(config.mailInfo.to);
-            $("#inputCc").val(config.mailInfo.cc);
-            $("#inputBcc").val( config.mailInfo.bcc);
-            $("#inputTitle").val(config.mailInfo.title);
-            if (!config.mailInfo.period) {
-                $("#inputPeriod").val("0");
-            } else {
-                $("#inputPeriod").val(config.mailInfo.period);
-            }
-            let d = new Date();
-            if (config.mailInfo.startTime) {
-                d = new Date(config.mailInfo.startTime);
-            }
-            $("#inputDateTime").val(d.format("yyyy-MM-ddThh:mm:ss"));
-            $("#hideChapterIndex").val(-1);
-            $("#inputChapterTitle").val("");
-            $("#selectChapterSheetName").val("");
-            renderSelectChapterSheetName();
-            renderChapter();
-        }
-        $("#buttonSaveChapter").click(function () {
-            saveChapter();
-        });
-        $("#buttonSaveMailInfo").click(function () {
-            saveMailInfo();
-        });
-        $("#selectChapterSheetName").change(function () {
-           $("#inputChapterTitle").val( $("#selectChapterSheetName").val());
-        });
-        $("#imgMail").click(function () {
-            init();
-            let obj = document.getElementById("modelMail");
-            SocialCalc.Keyboard.passThru = obj;
-            obj.focus();
-        });
-        this.deleteChapter = deleteChapter;
-        this.saveChapter = saveChapter;
-    };
-    $("#imgSave").click(function () {
-        $("#inputFileName").val(config.fileName);
-        $("#inputOwner").val(config.owner);
-        $("#inputTo").val(config.mailInfo.to);
-        $("#inputCc").val(config.mailInfo.cc);
-        $("#inputBcc").val( config.mailInfo.bcc);
-        $("#inputTitle").val(config.mailInfo.title);
-        if (!config.mailInfo.period) {
-            $("#inputPeriod").val("0");
-        } else {
-            $("#inputPeriod").val(config.mailInfo.period);
-        }
-        let d = new Date();
-        if (config.mailInfo.startTime) {
-            d = new Date(config.mailInfo.startTime);
-        }
-        $("#inputDateTime").val(d.format("yyyy-MM-ddThh:mm:ss"));
-        let obj = document.getElementById("modelSaveToServer");
+
+    function moveFocus () {
+        let obj = document.getElementById("toolbar");
         SocialCalc.Keyboard.passThru = obj;
         obj.focus();
-    });
-    $("#buttonSaveFile").click(function () {
-        let fileName = $("#inputFileName").val();
-        let owner = $("#inputOwner").val();
-        if (!fileName) {
-            alert("please input file name");
-            return;
+    }
+
+    $scope.$ = (function () {
+        return {
+            config: config,
+            sheetInfoList: workbook.sheetInfoList,
+            getCurrentSheet: getCurrentSheet,
+            mailModel: mailModel,
+            sheetTab: sheetTab,
+            saveModel: saveModel,
+            dataSourceModel: dataSourceModel,
+            downloadModel: downloadModel,
+            shareModel: shareModel,
+            dataModel:dataModel,
+            moveFocus: moveFocus,
         }
-        if (!owner) {
-            alert("please owner name");
-            return;
-        }
-        config.mailInfo.to = $("#inputTo").val();
-        config.mailInfo.cc = $("#inputCc").val();
-        config.mailInfo.bcc = $("#inputBcc").val();
-        config.mailInfo.title = $("#inputTitle").val();
-        config.mailInfo.startTime = new Date($("#inputDateTime").val()).getTime();
-        config.mailInfo.period = $("#inputPeriod").val();
-        let content = workbook.generateFile();
-        $.post("/api/file", {
-            fileName: fileName,
-            owner: owner,
-            content: content,
-            mailInfo: JSON.stringify(config.mailInfo),
-        }, function(jsonstr) {
-            // console.log(jsonstr);
-            let data = JSON.parse(jsonstr);
-            if (data.code != 0) {
-                alert("failed to load file: " + fileName + ", owner: " + owner);
-                return;
-            }
-            alert("OK");
-            config.fileName = fileName;
-            config.owner = owner;
-            document.title = fileName;
-        });
-    });
-    $("#buttonSendMail").click(function () {
-        let to = $("#inputTo").val();
-        let cc = $("#inputCc").val();
-        let bcc = $("#inputBcc").val();
-        let title = $("#inputTitle").val();
-        if (!title) {
-            alert("请设置邮件标题");
-            return;
-        }
-        if (!to && !cc && !bcc) {
-            alert("请设置至少一个收件人");
-            return;
-        }
-        let html = workbook.getHtmlForOutlook(config.mailInfo.chapterList);
-        sendMail(to, cc, bcc, title, html);
+    })();
+
+    angular.element($window).bind("resize", function () {
+        workbook.resize();
     });
 
-    $("#buttonLoad").click(async function() {
-        let ref = $("#inputRef").val();
-        if (!workbook.editor.range.hasrange) {
-            alert("please select a range");
-            return;
-        }
-        let sheet = workbook.getCurrentSheet();
-        let info = workbook.addRemoteInfo(sheet, ref);
-        await loadRemoteData(sheet, info, config.today);
-        workbook.refresh();
-    });
-    function getValueFromQuery (name) {
-        let reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
-        let r = window.location.search.substr(1).match(reg);
-        return r != null ? decodeURIComponent(r[2]) : null;
-    }
-    async function loadFileData (fileData, today) {
-        let list = JSON.parse(fileData);
-        for (let i = 0; i < list.length; ++i) {
-            let info = list[i];
-            let sheetInfo = workbook.addNewSheet(info.name, info.content);
-            addNewSheetTab(sheetInfo);
-            for (let j = 0; j < sheetInfo.sheet.remote.length; ++j) {
-                await loadRemoteData(sheetInfo.sheet, sheetInfo.sheet.remote[j], today);
-            }
-        }
-        workbook.recalcAllSheet();
-        $("#sheet1").click();
-        workbook.refresh();
-    }
-    $("#show-share-link").click(function () {
-        let link = window.location.origin + window.location.pathname
-            + "?fileName=" + config.fileName + "&owner=" + config.owner;
-        $("#aShareLink").attr("href", link).text(link);
-    });
+    dataModel.initFromUrlParam();
+    dataSourceModel.initList();
+});
 
-    function sendMail (to, cc, bcc, title, html) {
-        if (!title) {
-            alert("请设置邮件标题");
-            return;
-        }
-        if (!to && !cc && !bcc) {
-            alert("请设置至少一个收件人");
-            return;
-        }
-        $.post("/api/mail", {
-            title: title,
-            to: to,
-            cc: cc,
-            bcc: bcc,
-            body: html
-        }, function(jsonstr) {
-            console.log(jsonstr);
-        });
-    }
-    function initFromUrlParam (fileName, owner, today, mail) {
-        let url = "/api/file?fileName=" + fileName + "&owner=" + owner;
-        $.get(url, async function (jsonstr, status) {
-            // console.log(jsonstr);
-            let data = JSON.parse(jsonstr);
-            if (data.code != 0) {
-                alert("failed to load " + url);
-                return;
-            }
-            config.fileName = fileName;
-            config.owner = owner;
-            document.title = fileName;
-            if (today) {
-                config.today = today;
-            }
-            if (data.result.mailInfo) {
-                config.mailInfo = JSON.parse(data.result.mailInfo);
-            }
-            let content = data.result.content;
-            await loadFileData(content, today);
-            if (mail) {
-                window.setTimeout(function () { //
-                    let mailInfo = config.mailInfo;
-                    let html = workbook.getHtmlForOutlook(config.mailInfo.chapterList);
-                    sendMail(mailInfo.to, mailInfo.cc, mailInfo.bcc, mailInfo.title, html);
-                }, 1000); // give 1 second for recalc the formula data
-            }
-        });
-    }
-    $(document).ready(function () {
-        $(".icon-btn").click(function () {
-            let command = $(this).attr("command");
-            let arg = $(this).attr("arg");
-            if (command) {
-                workbook.executeCommand(command, arg);
-            }
-        });
-        $(window).resize(function () {
-            workbook.resize();
-        });
-        let fileName = getValueFromQuery("fileName");
-        let owner = getValueFromQuery("owner");
-        let mail = getValueFromQuery("mail");
-        let today = getValueFromQuery("today");
-        if (!fileName || !owner) {
-            addNewSheetTab();
-            $("ul#nav-tabs").find("li:first-child").find("a").addClass("active show");
-        } else {
-            initFromUrlParam(fileName, owner, today, mail);
+$(document).ready(function () {
+    $(".icon-btn").click(function () {
+        let command = $(this).attr("command");
+        let arg = $(this).attr("arg");
+        if (command) {
+            workbook.executeCommand(command, arg);
         }
     });
+});
 
 </script>
 </body>
