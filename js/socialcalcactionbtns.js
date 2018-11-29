@@ -15,6 +15,8 @@ $(document).ready(function() {
         "line2": {"img": "line","tooltip": "", "command": ""},
         "button_bold": {"img": "button_bold","tooltip": "加粗", "command": "set %C cellformat left"},
         "button_italic": {"img": "button_italic","tooltip": "斜体", "command": "set %C cellformat left"},
+        "button_fontcolor": {"img": "button_fontcolor","tooltip": "字体颜色", "command": "set %C cellformat left"},
+        "button_bgcolor": {"img": "button_bgcolor","tooltip": "背景颜色", "command": "set %C cellformat left"},
         "line3": {"img": "line","tooltip": "", "command": ""},
         "button_alignleft": {"img": "button_alignleft","tooltip": "左对齐", "command": "set %C cellformat left"},
         "button_aligncenter": {"img": "button_aligncenter","tooltip": "居中", "command": "set %C cellformat center"},

@@ -28,23 +28,24 @@
 <body ng-app="mainApp" ng-controller="mainController">
 <div class="container-fluid">
     <div class="first-part-actions" id="first-part-actions">
-        <div class="btn-group btn-group-sm" id="toolbar">
+        <div class="btn-group btn-group-sm">
             <a href="index.html" target="_blank">
                 <img class="icon-btn" src="./images/create.png" title="新建项目">
             </a>
-            <img class="icon-btn" src="./images/save.png" title="保存至服务器" data-toggle="modal" data-target="#modelSaveToServer" ng-click="$.moveFocus()">
+            <img class="icon-btn" src="./images/save.png" title="保存至服务器" data-toggle="modal" data-target="#modelSaveToServer" id="imgSave">
             <label class="input-file">
                 <input type="file" onchange="angular.element(this).scope().loadLocalFile(this)" multiple="multiple"/>
                 <img class="icon-btn" src="./images/input_file.png" title="选择文件" >
             </label>
-            <img class="icon-btn" src="./images/import.png" title="导入远程文档" data-toggle="modal" data-target="#modelDataSource" ng-click="$.moveFocus()">
-            <img class="icon-btn" src="./images/share.png" title="分享链接" data-toggle="modal" data-target="#modelShareLink" ng-click="$.moveFocus()">
+            <img class="icon-btn" src="./images/import.png" title="导入远程文档" data-toggle="modal" data-target="#modelDataSource">
+            <img class="icon-btn" src="./images/share.png" title="分享链接" data-toggle="modal" data-target="#modelShareLink" id="show-share-link" >
             <a ng-href="{{$.downloadModel.info.fileUri}}" ng-attr-download="{{$.downloadModel.info.fileName}}" ng-click="$.downloadModel.download()">
                 <img class="icon-btn" src="./images/download.png" title="下载excel文档">
             </a>
-            <img class="icon-btn" src="./images/mail.png" title="邮件设置" data-toggle="modal" data-target="#modelMail" ng-click="$.moveFocus()">
+            <img class="icon-btn" src="./images/mail.png" title="邮件设置" data-toggle="modal" data-target="#modelMail" id="imgMail" >
             <div class="action-btns"></div>
-            <img class="icon-btn" src="./images/chart.png" title="插入图表" data-toggle="modal" data-target="#modelChart" id="modelChartIcon" ng-click="$.moveFocus()">
+            <img class="icon-btn" src="./images/chart.png" title="插入图表" data-toggle="modal" data-target="#modelChart" id="modelChartIcon">
+            <img class="icon-btn" src="./images/button_about.png" title="about" data-toggle="modal" data-target="#modelAbout">
         </div>
         
         <div>
@@ -140,7 +141,7 @@
                     <div class="row">
                         <div class="col-1"><p>选择</p></div>
                         <input class="col-5" ng-model="$.mailModel.selected.title" type="text"/>
-                        <select class="col-5" ng-model="$.mailModel.selected.sheetInfo" ng-options="m.name for m in $.sheetInfoList"></select>
+                        <select class="col-5" ng-model="$.mailModel.selected.sheetName" ng-options="m.name for m in $.sheetInfoList"></select>
                         <div class="col-1"><button class="btn btn-default btn-sm" ng-click="$.mailModel.addChapter()">+</button></div>
                     </div>
                     <hr/>
@@ -269,6 +270,42 @@
             </div><!-- /.modal-content -->
         </div><!-- /.modal -->
     </div>
+    <div class="modal fade" id="modelAbout" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span class="modal-title">
+                        About
+                    </span>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div>作者</div>
+                    <hr/>
+                    <div>
+                        <a href="#">Dong</a>
+                    </div>
+                    <div>
+                        <a href="#">SmartXiaoMing</a>
+                    </div>
+                    <br/>
+                    <div>鸣谢</div>
+                    <hr/>
+                    <div>
+                        <a href="http://www.iconfont.cn/">iconfont.cn</a>
+                    </div>
+                    <div>
+                        <a href="https://www.highcharts.com/">highcharts</a>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
 
     <div>
         <div class="tab-content container-fluid" id="sheet"></div>
@@ -383,21 +420,14 @@ angular.module('mainApp', [])
                 return;
             }
             let content = workbook.generateFile();
-            let mailInfo = angular.copy(config.mailInfo);
-            if (mailInfo.startTime) {
-                mailInfo.startTime = mailInfo.startTime.getTime();
-            } else {
-                mailInfo.startTime = 0;
-            }
-
             $http({
                 method: 'POST',
                 url: "/api/file",
                 data: {
                     fileName: config.fileName,
                     owner: config.owner,
-                    content: content,
-                    mailInfo: JSON.stringify(mailInfo),
+                    content: config.content,
+                    mailInfo: JSON.stringify(config.mailInfo),
                 },
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 transformRequest: transformRequest
@@ -422,23 +452,27 @@ angular.module('mainApp', [])
     let mailModel = function() {
         let selected = {
             title: "",
-            sheetInfo: null,
+            sheetName: "",
         }
 
         function addChapter () {
-            if (!selected.sheetInfo) {
+            if (!selected.title) {
+                alert('请设置章节标题');
+                return;
+            }
+            if (!selected.sheetName) {
                 alert('请设置章节对应表单');
                 return;
             }
             let chapter = {
-                title: selected.title || selected.sheetInfo.name,
-                sheetName: selected.sheetInfo.name,
+                title: selected.title,
+                sheetName: selected.sheetName,
             };
             config.mailInfo.chapterList.push(chapter);
         }
 
         function deleteChapter (index) {
-            config.mailInfo.chapterList.splice(index, 1);
+            config.mailInfo.chapterList.split(index, 1);
         }
 
         function send () {
@@ -529,7 +563,7 @@ angular.module('mainApp', [])
         function edit (index) {
             let item = selected.sheetInfo.sheet.remote[index];
             selected.pos = index;
-            selected.range = item.coord1 + ":" + item.coord2,
+            selected.range = item.range,
             selected.ref = item.ref;
         }
 
@@ -643,7 +677,9 @@ angular.module('mainApp', [])
                 }
                 if (data.result.mailInfo) {
                     config.mailInfo = JSON.parse(data.result.mailInfo);
-                    config.mailInfo.startTime = new Date(config.mailInfo.startTime);
+                    if (typeof config.mailInfo.startTime === "number") {
+                        config.mailInfo.startTime = new Date(config.mailInfo.startTime);
+                    }
                     if (typeof config.mailInfo.period !== "number") {
                         config.mailInfo.period = parseInt(config.mailInfo.period);
                     }
@@ -671,12 +707,6 @@ angular.module('mainApp', [])
         return workbook.getCurrentSheet();
     }
 
-    function moveFocus () {
-        let obj = document.getElementById("toolbar");
-        SocialCalc.Keyboard.passThru = obj;
-        obj.focus();
-    }
-
     $scope.$ = (function () {
         return {
             config: config,
@@ -689,7 +719,6 @@ angular.module('mainApp', [])
             downloadModel: downloadModel,
             shareModel: shareModel,
             dataModel:dataModel,
-            moveFocus: moveFocus,
         }
     })();
 
