@@ -1791,7 +1791,8 @@ SocialCalc.ExecuteSheetCommand = function(sheet, cmd, saveundo) {
                   break;
                case "defaultfont":
                   if (saveundo) changes.AddUndo(undostart, sheet.GetStyleString("font", attribs[attrib]));
-                  if (rest=="* * *") rest = ""; // all default
+                  // *|normal|italic *|normal|bold *|size *|famliy
+                  if (rest=="* * * *") rest = ""; // all default
                   attribs[attrib] = sheet.GetStyleNum("font", rest);
                   break;
                case "defaulttextformat":
@@ -1949,7 +1950,9 @@ SocialCalc.ExecuteSheetCommand = function(sheet, cmd, saveundo) {
                      cell[attrib] = sheet.GetStyleNum(attrib, rest);
                      }
                   else if (attrib=="font") { // set coord font style weight size family
-                     if (rest=="* * *") rest = "";
+                     // *|normal|italic *|normal|bold *|size *|famliy
+                     if (rest=="* * * *") rest = ""; // all default
+                     // TODO GetStyleString rebuild
                      cell[attrib] = sheet.GetStyleNum("font", rest);
                      }
                   else if (attrib=="textvalueformat" || attrib=="nontextvalueformat") {
