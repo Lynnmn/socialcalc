@@ -1950,9 +1950,7 @@ SocialCalc.ExecuteSheetCommand = function(sheet, cmd, saveundo) {
                      cell[attrib] = sheet.GetStyleNum(attrib, rest);
                      }
                   else if (attrib=="font") { // set coord font style weight size family
-                     // *|normal|italic *|normal|bold *|size *|famliy
-                     if (rest=="* * * *") rest = ""; // all default
-                     // TODO GetStyleString rebuild
+                     if (rest=="* * *") rest = ""; // all default
                      cell[attrib] = sheet.GetStyleNum("font", rest);
                      }
                   else if (attrib=="textvalueformat" || attrib=="nontextvalueformat") {
