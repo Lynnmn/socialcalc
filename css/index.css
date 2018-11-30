@@ -122,12 +122,10 @@ input:focus, input:hover {
 }
 
 #modelChart .chart-list {
-    display: inline-block;
-    width: 200px;
-    height: 200px;
-    /* border: 1px solid #999; */
+    float: left;
+    width: 23%;
     padding: 5px;
-    overflow-y: scroll;
+    margin-right: 16px;
 }
 
 #modelChart .chart-list img {
@@ -144,6 +142,14 @@ input:focus, input:hover {
 
 #modelChart .chart-list img:hover {
     border: 1px solid #ddd;
+}
+
+.chart-demo {
+    display: inline-block;
+    width: 70%;
+    min-height: 500px;
+    padding: 20px;
+    border-left: 1px solid #eee;
 }
 
 .chart {

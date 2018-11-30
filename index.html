@@ -92,6 +92,13 @@
                         <img title="饼图" name="pie" src="./images/pie.png" />
                         <img title="区域图" name="area" src="./images/area.png" />
                     </div>
+                    <div class="chart-demo">
+                        <form class="axis-form">
+                            <input type="radio" id="col" name="axis" value="col" checked  style="width:13px">第一列作为横坐标
+                            <input type="radio" id="none" name="axis" value="none" style="width:13px">使用默认横坐标
+                        </form> 
+                        <div id="chart-demo-wrapper"></div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary" id="buttonSaveChart">确定</button>
@@ -746,6 +753,7 @@ $(document).ready(function () {
             workbook.executeCommand(command, arg);
         }
     });
+
 });
 
 </script>
