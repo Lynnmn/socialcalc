@@ -1791,8 +1791,7 @@ SocialCalc.ExecuteSheetCommand = function(sheet, cmd, saveundo) {
                   break;
                case "defaultfont":
                   if (saveundo) changes.AddUndo(undostart, sheet.GetStyleString("font", attribs[attrib]));
-                  // *|normal|italic *|normal|bold *|size *|famliy
-                  if (rest=="* * * *") rest = ""; // all default
+                  if (rest=="* * *") rest = ""; // all default
                   attribs[attrib] = sheet.GetStyleNum("font", rest);
                   break;
                case "defaulttextformat":
