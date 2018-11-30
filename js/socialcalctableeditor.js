@@ -197,7 +197,6 @@ SocialCalc.TableEditor = function(context) {
                ta.style.left = (position.left-1)+"px";
                ta.style.top = (position.top-1)+"px";
                }
-            console.log(editor.range, editor.range.hasrange)
             if (editor.range.hasrange) {
                sel = SocialCalc.crToCoord(editor.range.left, editor.range.top)+
                   ":"+SocialCalc.crToCoord(editor.range.right, editor.range.bottom);
@@ -1190,7 +1189,6 @@ SocialCalc.ProcessEditorMouseDown = function(e) {
    mouseinfo.element = ele;
    range = editor.range;
    result = SocialCalc.GridMousePosition(editor, clientX, clientY);
-   console.log(range)
 
    if (!result || result.rowheader) return; // not on a cell or col header
    mouseinfo.editor = editor; // remember for later

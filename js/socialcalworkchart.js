@@ -1,29 +1,55 @@
 $(document).ready(function() {
-    let selectedChart = ''
-    $('.chart-list img').click(function() {
-        $('.chart').css('display', 'block')
-        $(this).addClass('selected').siblings().removeClass('selected')
-        selectedChart = $(this).attr('name')
-    })
-
-    
-    
-    $('#buttonSaveChart').click(function() {
-        var editor = SocialCalc.EditorStepInfo.editor;
-        console.log(editor.range)
-        const { hasrange } = editor.range
-        if(hasrange) {
-            const { top, left, right, bottom } = editor.range
+    // var editor = SocialCalc.EditorStepInfo.editor;
+    function getColName(col, length) {
+        const letters = ["A","B","C","D","E","F","G","H","I","J","K","L","M",
+        "N","O","P","Q","R","S","T","U","V","W","X","Y","Z"];
+        let endCol = ''
+        if(col && col.length === 1) {
+            const startCode =  col.charCodeAt(0)
+            const maxLength =  90 - startCode
+            if(length < maxLength ) {
+                const endCode = startCode + length
+                endCol = String.fromCharCode(endCode)
+            } else {
+                const low = (length - maxLength) / 26
+                const high = (length - maxLength) % 26
+                if(low) {
+                    endCol = letters[low] + letters[high - 1]
+                } else {
+                    endCol = letters[high]
+                }
+            }
         }
-        if(selectedChart === 'pie') {
+        return endCol
+    }
+
+    function renderChart(type) {
+        const editor = SocialCalc.Keyboard.focusTable
+        const cells = workbook.getCurrentSheet().cells
+        const { anchorcoord, bottom, top, left, right } = editor.range || {}
+        const col = anchorcoord && anchorcoord.slice(0, 1)
+        const endCol = getColName(col, right - left)
+        var json = {};
+        if(type === 'pie') {
+            const data = []
+            console.log($("#col"), $("#col")[0].checked)
+            for(var key in cells) {
+                const keyCol = key.slice(0, 1)
+                const keyNum = key.slice(1)
+                if(keyCol === col && keyNum >= top && keyNum <= bottom) {
+                    data.push([ key, cells[key].datavalue ])
+                }
+                
+            }
+            console.log(data)
             var chart = {
                 plotBackgroundColor: null,
                 plotBorderWidth: null,
                 plotShadow: false
             };
-            var title = {
-                text: '2014 年各浏览器市场占有比例'   
-            };      
+            // var title = {
+            //     text: '2014 年各浏览器市场占有比例'   
+            // };      
             var tooltip = {
                 pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
             };
@@ -33,7 +59,7 @@ $(document).ready(function() {
                     cursor: 'pointer',
                     dataLabels: {
                         enabled: true,
-                        format: '<b>{point.name}%</b>: {point.percentage:.1f} %',
+                        format: '<b>{point.name}</b>: {point.percentage:.1f} %',
                         style: {
                         color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
                         }
@@ -42,28 +68,16 @@ $(document).ready(function() {
             };
             var series= [{
                 type: 'pie',
-                name: 'Browser share',
-                data: [
-                    ['Firefox',   45.0],
-                    ['IE',       26.8],
-                    {
-                        name: 'Chrome',
-                        y: 12.8,
-                        sliced: true,
-                        selected: true
-                    },
-                    ['Safari',    8.5],
-                    ['Opera',     6.2],
-                    ['Others',   0.7]
-                ]
+                name: '数据',
+                data: data
             }]; 
-            var json = {};   
+            
             json.chart = chart; 
             json.title = title;     
             json.tooltip = tooltip;  
             json.series = series;
             json.plotOptions = plotOptions;
-            $('#chart-container').highcharts(json); 
+           
         } else if(selectedChart === 'line') {
             var title = {
                 text: '城市平均气温'   
@@ -115,7 +129,7 @@ $(document).ready(function() {
                 }
              ];
           
-             var json = {};
+            //  var json = {};
           
              json.title = title;
              json.subtitle = subtitle;
@@ -125,7 +139,7 @@ $(document).ready(function() {
              json.legend = legend;
              json.series = series;
           
-             $('#chart-container').highcharts(json);
+            //  $('#chart-container').highcharts(json);
         } else if(selectedChart === 'bar') {
             var chart = {
                 type: 'column'
@@ -178,7 +192,7 @@ $(document).ready(function() {
                       data: [42.4, 33.2, 34.5, 39.7, 52.6, 75.5, 57.4, 60.4, 47.6, 39.1, 46.8, 51.1]
              }];     
                 
-             var json = {};   
+            //  var json = {};   
              json.chart = chart; 
              json.title = title;   
              json.subtitle = subtitle; 
@@ -188,7 +202,7 @@ $(document).ready(function() {
              json.series = series;
              json.plotOptions = plotOptions;  
              json.credits = credits;
-             $('#chart-container').highcharts(json);
+            //  $('#chart-container').highcharts(json);
         } else if(selectedChart === 'area') {
             var chart = {
                 type: 'area'
@@ -257,7 +271,7 @@ $(document).ready(function() {
                 }
              ];     
                 
-             var json = {};   
+            //  var json = {};   
              json.chart = chart; 
              json.title = title;   
              json.subtitle = subtitle; 
@@ -266,17 +280,25 @@ $(document).ready(function() {
              json.yAxis = yAxis;  
              json.series = series;
              json.plotOptions = plotOptions;
-             $('#chart-container').highcharts(json);
+            //  $('#chart-container').highcharts(json);
         }
-        
-        $('#modelChart').modal('hide')
-        
+        return json
+    }
+
+    let selectedChart = ''
+    $('.chart-list img').click(function() {
+        $('.chart').css('display', 'block')
+        $(this).addClass('selected').siblings().removeClass('selected')
+        selectedChart = $(this).attr('name')
+        $('#chart-demo-wrapper').highcharts(renderChart(selectedChart));
     })
-
-    var oBar = document.getElementById('chart')
-    var oBox = document.getElementById('chart')
-    startDrag(oBar, oBox);
-
+    
+    $('#buttonSaveChart').click(function() {
+        
+        
+        $('#chart-container').highcharts(renderChart(selectedChart));
+        $('#modelChart').modal('hide')
+    })
 
     $('.chart-delete').click(function() {
         $('.chart').css({
@@ -292,6 +314,8 @@ $(document).ready(function() {
         }
     })
 
-
+    var oBar = document.getElementById('chart')
+    var oBox = document.getElementById('chart')
+    startDrag(oBar, oBox);
     
 })
