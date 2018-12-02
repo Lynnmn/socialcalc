@@ -302,6 +302,8 @@ SocialCalc.ResetSheet = function(sheet, reload) {
 
    sheet.remote = []; // {coord1:"A1", coord2:"B2", "ref":"table=xxx&minDate=xxx&maxDate=xxx"}
 
+   sheet.charts = []; // [{}]
+
    }
 
 // Methods:
@@ -576,12 +578,17 @@ SocialCalc.ParseSheetSave = function(savedsheet,sheetobj) {
                  var info = {
                      coord1: parts[1],
                      coord2: parts[2],
-                     ref: parts[3],
+                     ref: SocialCalc.decodeFromSave(parts[3]),
                  }
                  sheetobj.remote.push(info);
              }
              break;
 
+         case "chart": // data from json
+            var meta = JSON.parse(SocialCalc.decodeFromSave(parts[1]));
+            // TODO var chartConfig = SocialCalc.ChartHelper.getConfig(meta);
+            sheetobj.charts.push({meta:meta});
+            break;
          case "":
             break;
 
@@ -830,7 +837,14 @@ SocialCalc.CreateSheetSave = function(sheetobj, range, canonicalize) {
    if (sheetobj.remote && sheetobj.remote.length > 0) {
        for (i=0; i<sheetobj.remote.length; ++i) {
            var info = sheetobj.remote[i];
-           result.push("remote:"+info.coord1+":"+info.coord2+":"+info.ref);
+           result.push("remote:"+info.coord1+":"+info.coord2+":"+SocialCalc.encodeForSave(info.ref));
+          }
+       }
+
+   if (sheetobj.charts && sheetobj.charts.length > 0) {
+       for (i=0;i < sheetobj.charts.length; ++i) {
+           var chart = sheetobj.charts[i];
+           result.push("chart:"+SocialCalc.encodeForSave(JSON.stringify(chart.meta)));
           }
        }
 
