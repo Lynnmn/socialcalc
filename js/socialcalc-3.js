@@ -585,9 +585,8 @@ SocialCalc.ParseSheetSave = function(savedsheet,sheetobj) {
              break;
 
          case "chart": // data from json
-            var meta = JSON.parse(SocialCalc.decodeFromSave(parts[1]));
-            // TODO var chartConfig = SocialCalc.ChartHelper.getConfig(meta);
-            sheetobj.charts.push({meta:meta});
+            var chart = JSON.parse(SocialCalc.decodeFromSave(parts[1]));
+            sheetobj.charts.push(chart);
             break;
          case "":
             break;
@@ -844,7 +843,7 @@ SocialCalc.CreateSheetSave = function(sheetobj, range, canonicalize) {
    if (sheetobj.charts && sheetobj.charts.length > 0) {
        for (i=0;i < sheetobj.charts.length; ++i) {
            var chart = sheetobj.charts[i];
-           result.push("chart:"+SocialCalc.encodeForSave(JSON.stringify(chart.meta)));
+           result.push("chart:"+SocialCalc.encodeForSave(JSON.stringify(chart)));
           }
        }
 

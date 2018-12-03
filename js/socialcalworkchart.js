@@ -95,9 +95,8 @@ SocialCalc.ChartHelper = function () {
         return endCol
     }
 
-    function renderChart(config) {
-        const editor = SocialCalc.Keyboard.focusTable
-        const cells = workbook.getCurrentSheet().cells
+    function renderChart(sheet, config) {
+        /*const cells = workbook.getCurrentSheet().cells
         const { anchorcoord, bottom, top, left, right } = editor.range || {}
         const col = anchorcoord && anchorcoord.slice(0, 1)
         const endCol = getColName(col, right - left)
@@ -150,10 +149,10 @@ SocialCalc.ChartHelper = function () {
             json.series = series;
             json.plotOptions = plotOptions;
            
-        } else if(config.type === 'line' || config.type === 'bar' || config.type === 'area') {
-            return renderChartX(config);
+        } else */if(config.type === 'line' || config.type === 'bar' || config.type === 'area') {
+            return renderChartX(sheet, config);
         }
-        return json;
+        // return json;
     }
 
     /*let selectedChart = ''
@@ -193,39 +192,38 @@ var credits = {
     enabled: false
 };
 
-function renderChartX(config) {
+function renderChartX(sheet, config) {
      // config:{title, subtitle, tooltip, legend, hasLegend, hasXsis, invert}
-    const editor = SocialCalc.Keyboard.focusTable
-    if (!editor.range.hasrange) {
-        return;
-    }
     let chartHelper = new SocialCalc.ChartHelper();
-    const sheet = workbook.getCurrentSheet();
-    const cells = sheet.cells
-    let range = editor.range;
-    let startCol = config.hasXsis ? range.left + 1 : range.left;
-    let startRow = config.hasLegend ? range.top + 1 : range.top;
+    const cells = sheet.cells;
+    let pair = SocialCalc.ParseRange(config.range);
+    let left = Math.min(pair.cr1.col, pair.cr2.col);
+    let right = Math.max(pair.cr1.col, pair.cr2.col);
+    let top = Math.min(pair.cr1.row, pair.cr2.row);
+    let bottom = Math.max(pair.cr1.row, pair.cr2.row);
+    let startCol = config.hasXsis ? left + 1 : left;
+    let startRow = config.hasLegend ? top + 1 : top;
     var xAxis = {
         categories: []
     };
-    for (let row = startRow; row<=range.bottom; row++) {
+    for (let row = startRow; row<=bottom; row++) {
         if (config.hasXsis) {
-            xAxis.categories.push(cells[SocialCalc.crToCoord(range.left, row)].datavalue);
+            xAxis.categories.push(cells[SocialCalc.crToCoord(left, row)].datavalue);
         } else {
             xAxis.categories.push("");
         }
     }
     var series =  [];
-    for (let col = startCol; col <= range.right; col++) {
+    for (let col = startCol; col <= right; col++) {
         let s = {
-            name: config.hasLegend ? cells[SocialCalc.crToCoord(col, range.top)].datavalue : "",
+            name: config.hasLegend ? cells[SocialCalc.crToCoord(col, top)].datavalue : "",
             data: []
         };
         series.push(s);
     }
-    for (let col = startCol; col <= range.right; col++) {
+    for (let col = startCol; col <= right; col++) {
         let data = series[col - startCol].data;
-        for (let row=startRow; row<=range.bottom; row++) {
+        for (let row=startRow; row<=bottom; row++) {
             let coord = SocialCalc.crToCoord(col, row);
             var value = cells[coord].datavalue - 0;
             data.push(value);
@@ -239,7 +237,7 @@ function renderChartX(config) {
         borderWidth: 0
     };
     var json = {};
-    json.chart = {type: config.chartType };
+    json.chart = {type: config.type };
     json.title = {text: config.title };
     json.subtitle = {text: config.subtitle};
     json.xAxis = xAxis;

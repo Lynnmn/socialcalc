@@ -8,11 +8,16 @@ if (!SocialCalc.TableEditor) {
 }
 
 SocialCalc.Workbook = function(parentId, formulaId) {
-    this.sheetInfoList = []; // name, sheet, context, editor, node
+    this.sheetInfoList = []; // {name, sheet, context, editor, node, chartConfig:[]}
     this.currentSheetIndex = 0;
     this.editor = null;
     this.parentId = parentId;
     this.formulaId = formulaId;
+    renderSheetChart = null;
+
+    this.setRenderSheetChart = function (f) {
+        renderSheetChart = f;
+    }
 
     this.generateSheetName = function () {
         var map = {};
@@ -32,6 +37,10 @@ SocialCalc.Workbook = function(parentId, formulaId) {
     this.getCurrentSheet = function () {
         var info = this.sheetInfoList[this.currentSheetIndex];
         return info ? info.sheet : null;
+    }
+
+    this.getCurrentSheetInfo = function () {
+        return this.sheetInfoList[this.currentSheetIndex];
     }
 
     this.getIndexBySheetName = function (name) {
@@ -81,6 +90,7 @@ SocialCalc.Workbook = function(parentId, formulaId) {
             name: name,
             sheet: sheet,
             context: context,
+            charts: [],
         };
         this.sheetInfoList.push(sheetInfo);
         return sheetInfo;
@@ -143,6 +153,14 @@ SocialCalc.Workbook = function(parentId, formulaId) {
         parentNode.appendChild(node);
         this.currentSheetIndex = i;
         this.editor = editor;
+        editor.StatusCallback["chart"] = {
+            params: sheetInfo,
+            func: function (editor, status, arg, param) {
+                if (status == "renderdone" && renderSheetChart) {
+                    renderSheetChart(param.sheet);
+                }
+            }
+        };
         editor.EditorScheduleSheetCommands("redisplay", true, false);
     }
 

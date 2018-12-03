@@ -100,7 +100,7 @@
                             <input type="checkbox" checked  style="width:13px" ng-model="$.chartModel.selected.meta.hasXsis">第一列作为横坐标
                             <input type="text" ng-model="$.chartModel.selected.meta.title">标题
                         </form>
-                        <highchart id="chart1" config="$.chartModel.selected.chartConfig"></highchart>
+                        <highchart id="chart1" config="$.chartModel.selected.chart"></highchart>
                     </div>
 
                 </div>
@@ -333,10 +333,10 @@
         </ul>
     </div>
    
-    <div class="chart" ng-repeat="chart in $.getCurrentSheet().charts">
+    <div class="chart" ng-repeat="chart in $.chartModel.charts">
         <div id="chart-container" ng-drag="true" ng-drag-data="chart" ng-drag-success="$.chartModel.drag($data,$event)">
             <img src="./images/delete.png" class="chart-delete" ng-click="$.chartModel.remove($index)">
-            <highchart config="chart.chartConfig"></highchart>
+            <highchart config="chart"></highchart>
         </div>
     </div>
    
@@ -454,7 +454,7 @@ angular.module('mainApp', ["highcharts-ng", 'ngDraggable'])
             }).then(function (response) {
                 if (response.data.code == 0) {
                     alert("OK");
-                    document.title = fileName;
+                    document.title = config.fileName;
                 } else {
                     console.log(response);
                     alert(response.data.message);
@@ -633,6 +633,7 @@ angular.module('mainApp', ["highcharts-ng", 'ngDraggable'])
     let chartModel = function () {
         let selected = {
             meta: {
+                range: "",
                 title: "",
                 subtitle: "",
                 type: "",
@@ -640,21 +641,30 @@ angular.module('mainApp', ["highcharts-ng", 'ngDraggable'])
                 hasXsis: true,
                 hasLegend: true,
             },
-            chartConfig:{},
+            chart:{},
         };
+        let charts = [];
 
         function selectType (type) {
-            let editor = SocialCalc.Keyboard.focusTable;
-            if (!editor.range.hasrange) {
+            if (!workbook.editor.range.hasrange) {
+                alert("no data range selected");
                 return;
             }
             selected.meta.type = type;
-            selected.chartConfig = renderChart(selected.meta);
+            let range = workbook.editor.range;
+            let sheetInfo = getCurrentSheetInfo();
+            selected.meta.range = SocialCalc.crToCoord(range.left, range.top)
+                +":"+SocialCalc.crToCoord(range.right, range.bottom);
+            selected.meta.type = type;
+            selected.chart = renderChart(sheetInfo.sheet, selected.meta);
         }
 
         function add () {
-            let config = angular.copy(selected);
-            workbook.getCurrentSheet().charts.push(config);
+            let sheetInfo = getCurrentSheetInfo();
+            let config = angular.copy(selected.meta);
+            let chart = renderChart(sheetInfo.sheet, selected.meta);
+            sheetInfo.sheet.charts.push(config);
+            charts.push(chart);
            // $('#chart-container').highcharts(renderChart(selected.chartConfig));
             $('#modelChart').modal('hide'); // TODO
             /*var oBar = document.getElementById('chart-container');
@@ -663,7 +673,9 @@ angular.module('mainApp', ["highcharts-ng", 'ngDraggable'])
         }
 
         function remove (index) {
-            workbook.getCurrentSheet().charts.splice(index, 1);
+            let sheetInfo = getCurrentSheetInfo();
+            chats.splice(index, 1);
+            sheet.chats.splice(index, 1);
         }
 
         function getCss(o, key){
@@ -677,12 +689,26 @@ angular.module('mainApp', ["highcharts-ng", 'ngDraggable'])
             target.style.top = parseInt(getCss(target, "top")) + event.ty + "px";
         }
 
+        function renderSheetChart (sheet) {
+            if (sheet.charts.length != 0 || charts.length != 0) {
+                charts.splice(0, charts.length);
+                for (let i = 0; i < sheet.charts.length; ++i) {
+                    let chartData = sheet.charts[i];
+                    let chartConfig = renderChart(sheet, chartData);
+                    charts.push(chartConfig);
+                }
+                $scope.$apply();
+            }
+        }
+
         return {
             selected: selected,
+            charts: charts,
             selectType: selectType,
             add: add,
             remove: remove,
             drag: drag,
+            renderSheetChart: renderSheetChart,
         }
     }();
 
@@ -777,6 +803,10 @@ angular.module('mainApp', ["highcharts-ng", 'ngDraggable'])
         return workbook.getCurrentSheet();
     }
 
+    function getCurrentSheetInfo() {
+        return workbook.sheetInfoList[workbook.currentSheetIndex];
+    }
+
     function moveFocus () {
         let obj = document.getElementById("toolbar");
         SocialCalc.Keyboard.passThru = obj;
@@ -787,6 +817,7 @@ angular.module('mainApp', ["highcharts-ng", 'ngDraggable'])
         return {
             config: config,
             sheetInfoList: workbook.sheetInfoList,
+            getCurrentSheetInfo: getCurrentSheetInfo,
             getCurrentSheet: getCurrentSheet,
             mailModel: mailModel,
             sheetTab: sheetTab,
@@ -804,6 +835,7 @@ angular.module('mainApp', ["highcharts-ng", 'ngDraggable'])
         workbook.resize();
     });
 
+    workbook.setRenderSheetChart(chartModel.renderSheetChart);
     dataModel.initFromUrlParam();
     dataSourceModel.initList();
 });
