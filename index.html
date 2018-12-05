@@ -333,14 +333,16 @@
         </ul>
     </div>
    
-    <div class="chart" ng-repeat="chart in $.chartModel.charts">
-        <div id="chart-container" ng-drag="true" ng-drag-data="chart" ng-drag-success="$.chartModel.drag($data,$event)">
-            <img src="./images/delete.png" class="chart-delete" ng-click="$.chartModel.remove($index)">
-            <highchart config="chart"></highchart>
-        </div>
+    <div class="chart"
+         ng-repeat="chart in $.chartModel.charts"
+         ng-mousedown="$.chartModel.mousedown($event, $index)"
+         ng-mousemove="$.chartModel.mousemove($event, $index)"
+         ng-mouseup="$.chartModel.mouseup($event, $index)"
+         ng-style="chart.style"
+         >
+        <img src="./images/delete.png" class="chart-delete" ng-click="$.chartModel.remove($index)">
+        <highchart config="chart"></highchart>
     </div>
-   
-    
 </div>
 <script>
 let workbook = new SocialCalc.Workbook("sheet", "formula");
@@ -644,6 +646,7 @@ angular.module('mainApp', ["highcharts-ng", 'ngDraggable'])
             chart:{},
         };
         let charts = [];
+        let dragInfo = {flag:false,};
 
         function selectType (type) {
             if (!workbook.editor.range.hasrange) {
@@ -667,26 +670,59 @@ angular.module('mainApp', ["highcharts-ng", 'ngDraggable'])
             charts.push(chart);
            // $('#chart-container').highcharts(renderChart(selected.chartConfig));
             $('#modelChart').modal('hide'); // TODO
-            /*var oBar = document.getElementById('chart-container');
+            var oBar = document.getElementById('chart-container');
             var oBox = document.getElementById('chart-container')
-            startDrag(oBar, oBox);*/
+            startDrag(oBar, oBox);
         }
 
         function remove (index) {
             let sheetInfo = getCurrentSheetInfo();
-            chats.splice(index, 1);
-            sheet.chats.splice(index, 1);
+            charts.splice(index, 1);
+            sheetInfo.sheet.charts.splice(index, 1);
         }
 
-        function getCss(o, key){
-            return o.currentStyle? o.currentStyle[key] : document.defaultView.getComputedStyle(o,false)[key];
-        };
+        function renderSheetChart (sheet) {
+            if (sheet.charts.length != 0 || charts.length != 0) {
+                charts.splice(0, charts.length);
+                for (let i = 0; i < sheet.charts.length; ++i) {
+                    let chartData = sheet.charts[i];
+                    let chartConfig = renderChart(sheet, chartData);
+                    let style = {};
+                    if (chartData.left != undefined) {
+                        style.left = chartData.left + "px";
+                    }
+                    if (chartData.top != undefined) {
+                        style.top = chartData.top + "px";
+                    }
+                    chartConfig.style = style;
+                    charts.push(chartConfig);
+                }
+                $scope.$apply();
+            }
+>>>>>>> support chart
+        }
 
-        function drag (data, event) {
-            console.log(data, event);
-            let target = event.element[0];
-            target.style.left = parseInt(getCss(target, "left")) + event.tx + "px";
-            target.style.top = parseInt(getCss(target, "top")) + event.ty + "px";
+        function mousedown (event, index) {
+            dragInfo.target = event.currentTarget;
+            dragInfo.startX = event.clientX;
+            dragInfo.startY = event.clientY;
+            dragInfo.left = parseInt(document.defaultView.getComputedStyle(dragInfo.target,false)["left"]);
+            dragInfo.top = parseInt(document.defaultView.getComputedStyle(dragInfo.target,false)["top"]);
+            dragInfo.flag = true;
+        }
+
+        function mousemove (event, index) {
+            if (dragInfo.flag) {
+                dragInfo.target.style.left = dragInfo.left + event.clientX - dragInfo.startX + "px";
+                dragInfo.target.style.top = dragInfo.top + event.clientY - dragInfo.startY + "px";
+            }
+        }
+
+        function mouseup (event, index) {
+            let chart = getCurrentSheetInfo().sheet.charts[index];
+            dragInfo.flag = false;
+            chart.left = dragInfo.left + event.clientX - dragInfo.startX;
+            chart.top = dragInfo.top + event.clientY - dragInfo.startY;
         }
 
         function renderSheetChart (sheet) {
@@ -707,8 +743,10 @@ angular.module('mainApp', ["highcharts-ng", 'ngDraggable'])
             selectType: selectType,
             add: add,
             remove: remove,
-            drag: drag,
             renderSheetChart: renderSheetChart,
+            mousedown: mousedown,
+            mouseup: mouseup,
+            mousemove: mousemove,
         }
     }();
 
