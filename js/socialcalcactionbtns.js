@@ -18,7 +18,7 @@ $(document).ready(function() {
         "button_italic": {"img": "button_italic","tooltip": "斜体", "command": "set %C font italic normal * *"},
         "button_italicbold": {"img": "button_italicbold","tooltip": "斜体加粗", "command": "set %C font italic bold * *"},
         "button_fontcolor": {"img": "button_fontcolor","tooltip": "字体颜色", "command": "set %C cellformat left"},
-        "button_bgcolor": {"img": "button_bgcolor","tooltip": "背景颜色", "command": "set %C cellformat left"},
+        "button_bgcolor": {"img": "button_bgcolor","tooltip": "背景颜色", "command": "set %C background color * *"},
         "line3": {"img": "line","tooltip": "", "command": ""},
         "button_alignleft": {"img": "button_alignleft","tooltip": "左对齐", "command": "set %C cellformat left"},
         "button_aligncenter": {"img": "button_aligncenter","tooltip": "居中", "command": "set %C cellformat center"},
@@ -43,11 +43,21 @@ $(document).ready(function() {
     $.each(btns, function(key, value) {
         const isLine = /line/.test(value.img)
         const className = isLine ? '' : 'icon-btn'
-        btnHtml += '<img class="'+ className
+        let newImg = ''
+        if(key === 'button_bgcolor') {
+            newImg = '<input type="text" id="input-cxcolor" class="icon-btn" readonly title='+ value.tooltip +' command="'+ value.command +'">'
+        } else {
+            newImg = '<img class="'+ className
             + '" id="'+ key
             + '" src="./images/' + value.img +'.png" title="'+ value.tooltip
             + '" command="' + value.command
             + '" arg="' + value.arg + '"/>'
+        }
+        btnHtml += newImg
     })
     $(".action-btns").html(btnHtml)
+
+    $("#input-cxcolor").cxColor(function(api) {
+        api.color()
+    })
 })

@@ -226,7 +226,6 @@ SocialCalc.Workbook = function(parentId, formulaId) {
 
     this.executeCommand = function(combostr, sstr) {
         var eobj = this.editor;
-
         var str = {};
         str.P = "%";
         str.N = "\n"
@@ -248,7 +247,6 @@ SocialCalc.Workbook = function(parentId, formulaId) {
         combostr = combostr.replace(/%S/g, str.S);
         combostr = combostr.replace(/%W/g, str.W);
         combostr = combostr.replace(/%P/g, str.P);
-
         eobj.EditorScheduleSheetCommands(combostr, true, false);
     }
 
