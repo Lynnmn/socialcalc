@@ -28,7 +28,7 @@
     <link rel="stylesheet" type="text/css" href="css/reset.css">
 </head>
 <body ng-app="mainApp" ng-controller="mainController">
-<div class="container-fluid" ng-drop="true">
+<div class="container-fluid">
     <div class="first-part-actions" id="first-part-actions">
         <div class="btn-group btn-group-sm" id="toolbar">
             <a href="index.html" target="_blank">
@@ -346,7 +346,7 @@
 </div>
 <script>
 let workbook = new SocialCalc.Workbook("sheet", "formula");
-angular.module('mainApp', ["highcharts-ng", 'ngDraggable'])
+angular.module('mainApp', ["highcharts-ng"])
 .config(['$compileProvider', function($compileProvider) {
     $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|tel|file|sms|data):/);
 }])
