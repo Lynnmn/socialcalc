@@ -699,7 +699,6 @@ angular.module('mainApp', ["highcharts-ng", 'ngDraggable'])
                 }
                 $scope.$apply();
             }
->>>>>>> support chart
         }
 
         function mousedown (event, index) {
@@ -723,18 +722,6 @@ angular.module('mainApp', ["highcharts-ng", 'ngDraggable'])
             dragInfo.flag = false;
             chart.left = dragInfo.left + event.clientX - dragInfo.startX;
             chart.top = dragInfo.top + event.clientY - dragInfo.startY;
-        }
-
-        function renderSheetChart (sheet) {
-            if (sheet.charts.length != 0 || charts.length != 0) {
-                charts.splice(0, charts.length);
-                for (let i = 0; i < sheet.charts.length; ++i) {
-                    let chartData = sheet.charts[i];
-                    let chartConfig = renderChart(sheet, chartData);
-                    charts.push(chartConfig);
-                }
-                $scope.$apply();
-            }
         }
 
         return {
