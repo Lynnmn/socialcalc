@@ -330,7 +330,12 @@
                 <a class="nav-link" data-toggle="tab" href="#"
                     ng-class="{active:$.sheetTab.isSelected($index)}"
                     ng-click="$.sheetTab.select($index)"
-                    ng-dblclick="$.sheetTab.rename($index)">{{sheetName}}</a>
+                    ng-dblclick="$.sheetTab.rename($index)">{{sheetName}}
+                    <span class="pull-right" ng-click="$.sheetTab.remove($index)">
+                        <img class="" src="./images/x.png">
+                    </span>
+                </a>
+
             </li>
             <li class="add-sheet" ng-click="$.sheetTab.add()">
                 <img src="./images/add-sheet.png" >
@@ -408,9 +413,12 @@ angular.module('mainApp', ["highcharts-ng"])
 
         function remove (index) {
             let name = tabList[index];
+            if (!confirm("确认删除tab'" + name + "', 删除后不可恢复?")) {
+                return;
+            }
             workbook.removeSheet(name);
             tabList.splice(index, 1);
-                list.push(response.data.result);
+            list.push(response.data.result);
             if (tabList.length == 0) {
                 selected.index = -1;
             } else if (selected.index >= tabList.length) {
