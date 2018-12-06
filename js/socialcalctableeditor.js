@@ -766,7 +766,6 @@ SocialCalc.EditorScheduleSheetCommands = function(editor, cmdstr, saveundo, igno
       return;
       }
 
-      console.log(editor,cmdstr )
    switch (cmdstr) {
       case "recalc":
       case "redisplay":
