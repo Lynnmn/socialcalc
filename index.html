@@ -168,10 +168,13 @@
                         <label>每隔几天</label>
                         <input type="number" ng-model="$.config.mailInfo.period"/>
                     </div>
+                    <div>
+                        <label class="text-warning">{{$.mailModel.selected.sendResult}}</label>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                    <button type="button" class="btn btn-primary" ng-click="$.mailModel.send()" data-dismiss="modal">发送</button>
+                    <button type="button" class="btn btn-primary" ng-click="$.mailModel.send()">发送</button>
                 </div>
             </div>
         </div>
@@ -352,7 +355,7 @@ angular.module('mainApp', ["highcharts-ng"])
 .config(['$compileProvider', function($compileProvider) {
     $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|tel|file|sms|data):/);
 }])
-.controller('mainController', function($scope, $http, $window) {
+.controller('mainController', function($scope, $http, $window, $q) {
     let config = {
         fileName: "",
         owner: "",
@@ -444,7 +447,7 @@ angular.module('mainApp', ["highcharts-ng"])
                 mailInfo.startTime = 0;
             }
 
-            $http({
+            return $http({
                 method: 'POST',
                 url: "/api/file",
                 data: {
@@ -477,6 +480,7 @@ angular.module('mainApp', ["highcharts-ng"])
         let selected = {
             title: "",
             sheetInfo: null,
+            sendResult: "",
         }
 
         function addChapter () {
@@ -505,7 +509,7 @@ angular.module('mainApp', ["highcharts-ng"])
                 return;
             }
             let html = workbook.getHtmlForOutlook(config.mailInfo.chapterList);
-            $http({
+            return $http({
                 method: 'POST',
                 url: "/api/mail",
                 data: {
@@ -518,14 +522,14 @@ angular.module('mainApp', ["highcharts-ng"])
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 transformRequest: transformRequest,
             }).then(function (response) {
+                console.log(response);
                 if (response.data.code == 0) {
-                    alert("OK");
+                    selected.sendResult = "success to send";
                 } else {
-                    console.log(response);
-                    alert(response.data.message);
+                    selected.sendResult = "failed to send : " + response.data.message;
                 }
             }, function (response) {
-                alert("error: " + response);
+                selected.sendResult = "error to send: " + response;
             });
         }
 
@@ -549,10 +553,8 @@ angular.module('mainApp', ["highcharts-ng"])
 
         function initList () {
             let url = "/api/stat/table/info?offset=0&size=100";
-            $http({
-                method: 'GET',
-                url: url,
-            }).then(function (response) {
+            $http({method: 'GET', url: url,})
+            .then(function (response) {
                 if (response.data.code != 0) {
                     console.log(response);
                     alert(response.data.message);
@@ -568,7 +570,7 @@ angular.module('mainApp', ["highcharts-ng"])
             selected.ref = selected.source;
         }
 
-        async function add () {
+        function add () {
             let cr2 = selected.range.split(':');
             if (cr2.length != 2) {
                 alert("range is invalid:" + selected.range);
@@ -576,8 +578,8 @@ angular.module('mainApp', ["highcharts-ng"])
             }
             let sheet = selected.sheetInfo.sheet;
             let info = workbook.addRemoteInfo(sheet, cr2[0], cr2[1], selected.ref, selected.pos);
-            await dataModel.loadRemoteData(sheet, info, config.today);
-            workbook.refresh();
+            $q.when(dataModel.loadRemoteData(sheet, info, config.today))
+            .then(function() { workbook.refresh();});
         }
 
         function edit (index) {
@@ -740,7 +742,7 @@ angular.module('mainApp', ["highcharts-ng"])
     }();
 
     let dataModel = function () {
-        async function loadRemoteData (sheet, info, today) {
+        function loadRemoteData (sheet, info, today) {
             if (sheet.remote.length == 0) {
                 return;
             }
@@ -748,33 +750,36 @@ angular.module('mainApp', ["highcharts-ng"])
             if (today) {
                 url += "&today=" + today;
             }
-            await new Promise(function (resolve, reject) {
-                $http({method: 'GET', url: url}).then(async function (response) {
-                    if (response.data.code != 0) {
-                        console.log("error: " + response);
-                        alert("failed to load remote data:" + url);
-                    }
-                    workbook.updateRemoteData(sheet, info, response.data.result);
-                    resolve();
-                }, async function () {
+            return $http({method: 'GET', url: url})
+            .then(function (response) {
+                if (response.data.code != 0) {
                     console.log("error: " + response);
-                    reject();
-                });
+                    alert("failed to load remote data:" + url);
+                }
+                workbook.updateRemoteData(sheet, info, response.data.result);
+            }, function () {
+                console.log("error: " + response);
             });
         }
 
-        async function loadFileData (fileData, today) {
+        function loadFileData (fileData, today) {
             let list = JSON.parse(fileData);
+            let promises = [];
             for (let i = 0; i < list.length; ++i) {
                 let info = list[i];
                 let sheetInfo = workbook.addNewSheet(info.name, info.content);
                 sheetTab.add(sheetInfo.name);
                 for (let j = 0; j < sheetInfo.sheet.remote.length; ++j) {
-                    await loadRemoteData(sheetInfo.sheet, sheetInfo.sheet.remote[j], today);
+                    let p = loadRemoteData(sheetInfo.sheet, sheetInfo.sheet.remote[j], today);
+                    if (p) {
+                        promises.push(p);
+                    }
                 }
             }
-            workbook.recalcAllSheet();
-            workbook.refresh();
+            return $q.all(promises).then(function() {
+                workbook.recalcAllSheet();
+                workbook.refresh();
+            });
         }
 
         function initFromUrlParam () {
@@ -787,7 +792,8 @@ angular.module('mainApp', ["highcharts-ng"])
                 return;
             }
             let url = "/api/file?fileName=" + fileName + "&owner=" + owner;
-            $http({method: 'GET', url: url}).then(async function (response) {
+            $http({method: 'GET', url: url})
+            .then(function (response) {
                  if (response.data.code != 0) {
                     console.log(response);
                     alert(response.data.message);
@@ -808,12 +814,14 @@ angular.module('mainApp', ["highcharts-ng"])
                     }
                 }
                 let content = data.result.content;
-                await loadFileData(content, today);
-                if (mail) {
-                    window.setTimeout(function () {
-                        mailModel.send();
-                    }, 1000); // give 1 second for recalc the formula data
-                }
+                $q.when(loadFileData(content, today))
+                .then(function () {
+                    if (mail) {
+                        window.setTimeout(function () {
+                            mailModel.send();
+                        }, 1000); // give 1 second for recalc the formula data
+                    }
+                });
             }, function (response) {
                 console.log("error: " + response);
             });
