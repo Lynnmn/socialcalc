@@ -470,7 +470,7 @@ angular.module('mainApp', ["highcharts-ng"])
                 case "italic": workbook.executeCommand("set %C font italic normal * *"); break;
                 case "italicbold": workbook.executeCommand("set %C font italic bold * *"); break;
                 case "color": workbook.executeCommand("set %C color " + selected.fontcolor); break;
-                case "bgcolor": workbook.executeCommand("set %C color " + selected.bgcolor); break;
+                case "bgcolor": workbook.executeCommand("set %C bgcolor " + selected.bgcolor); break;
                 case "alignleft": workbook.executeCommand("set %C cellformat left"); break;
                 case "aligncenter": workbook.executeCommand("set %C cellformat center"); break;
                 case "alignright": workbook.executeCommand("set %C cellformat right"); break;
