@@ -451,7 +451,7 @@ angular.module('mainApp', ["highcharts-ng"])
         });
         $("#inputbgcolor").cxColor({color:selected.bgcolor}).bind('change', function () {
             selected.bgcolor = this.value;
-            workbook.executeCommand("set %C color " + selected.bgcolor);
+            workbook.executeCommand("set %C bgcolor " + selected.bgcolor);
         });
 
         function click(cmd) {
@@ -484,7 +484,7 @@ angular.module('mainApp', ["highcharts-ng"])
                 case "deletecol": workbook.executeCommand("deletecol %C"); break;
                 case "percent": workbook.executeCommand("set %C nontextvalueformat #,##0.00%"); break;
                 case "dot2": workbook.executeCommand("set %C nontextvalueformat #,##0.00"); break;
-                case "interger": workbook.executeCommand("set %C nontextvalueformat #,##0"); break;
+                case "integer": workbook.executeCommand("set %C nontextvalueformat #,##0"); break;
             }
         }
 
