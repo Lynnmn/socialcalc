@@ -9,21 +9,17 @@
     <script src="./dist/js/jquery.min.js"></script>
     <script src="./dist/js/popper.min.js"></script>
     <script src="./dist/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="dist/js/drag.1.0.js"></script>
-    <script src="http://code.highcharts.com/highcharts.js"></script>
+    <script src="./dist/js/highcharts.js"></script>
     <script src="./dist/js/utils.js"></script>
     <script src="./dist/js/angular.min.js"></script>
     <script src="./dist/js/highcharts-ng.min.js"></script>
-    <script src="./dist/js/ngDraggable.js"></script>
     <script src="./dist/js/jquery.cxcolor.min.js"></script>
     <script type="text/javascript" src="js/socialcalcconstants.js"></script>
     <script type="text/javascript" src="js/socialcalc-3.js"></script>
     <script type="text/javascript" src="js/socialcalctableeditor.js"></script>
     <script type="text/javascript" src="js/formatnumber2.js"></script>
     <script type="text/javascript" src="js/formula1.js"></script>
-    <script type="text/javascript" src="js/socialcalcpopup.js"></script>
     <script type="text/javascript" src="js/socialcalcworkbook.js"></script>
-    <script type="text/javascript" src="js/socialcalcactionbtns.js"></script>
     <script type="text/javascript" src="js/socialcalworkchart.js"></script>
     <link rel="stylesheet" type="text/css" href="css/socialcalc.css">
     <link rel="stylesheet" type="text/css" href="css/index.css">
@@ -36,6 +32,7 @@
             <a href="index.html" target="_blank">
                 <img class="icon-btn" src="./images/create.png" title="新建项目">
             </a>
+            <img class="icon-btn" src="./images/button_open.png" title="打开云端文件" data-toggle="modal" data-target="#modelLoadFromServer" ng-click="$.moveFocus()">
             <img class="icon-btn" src="./images/save.png" title="保存至服务器" data-toggle="modal" data-target="#modelSaveToServer" ng-click="$.moveFocus()">
             <label class="input-file">
                 <input type="file" onchange="angular.element(this).scope().loadLocalFile(this)" multiple="multiple"/>
@@ -47,7 +44,42 @@
                 <img class="icon-btn" src="./images/download.png" title="下载excel文档">
             </a>
             <img class="icon-btn" src="./images/mail.png" title="邮件设置" data-toggle="modal" data-target="#modelMail" ng-click="$.moveFocus()">
-            <div class="action-btns"></div>
+            <img src='./images/line.png'/>
+            <img class='icon-btn' src='./images/button_undo.png' title='撤销' ng-click='$.toolbar.click("undo")'/>
+            <img class='icon-btn' src='./images/button_redo.png' title='重做' ng-click='$.toolbar.click("redo")'/>
+            <img class='icon-btn' src='./images/button_copy.png' title='复制' ng-click='$.toolbar.click("copy")'/>
+            <img class='icon-btn' src='./images/button_cut.png' title='剪切' ng-click='$.toolbar.click("cut")'/>
+            <img class='icon-btn' src='./images/button_paste.png' title='粘贴' ng-click='$.toolbar.click("paste")'/>
+            <img src='./images/line.png'/>
+            <img class='icon-btn' src='./images/button_delete.png' title='清空内容' ng-click='$.toolbar.click("erase")'/>
+            <img class='icon-btn' src='./images/button_pasteformats.png' title='格式化粘贴' ng-click='$.toolbar.click("pasteformats")'/>
+            <img class='icon-btn' src='./images/button_filldown.png' title='向下填充' ng-click='$.toolbar.click("filldown")'/>
+            <img class='icon-btn' src='./images/button_fillright.png' title='向右填充' ng-click='$.toolbar.click("fillright")'/>
+            <img src='./images/line.png'/>
+            <img class='icon-btn' src='./images/button_font.png' title='清除字体' ng-click='$.toolbar.click("font")'/>
+            <img class='icon-btn' src='./images/button_bold.png' title='加粗' ng-click='$.toolbar.click("bold")'/>
+            <img class='icon-btn' src='./images/button_italic.png' title='斜体' ng-click='$.toolbar.click("italic")'/>
+            <img class='icon-btn' src='./images/button_italicbold.png' title='加粗斜体' ng-click='$.toolbar.click("italibold")'/>
+            <img class='icon-btn' id='inputfontcolor' src='./images/button_fontcolor.png' title='字体颜色' ng-click='$.toolbar.click("fontcolor")'/>
+            <img class='icon-btn' id='inputbgcolor' src='./images/button_bgcolor.png' title='背景色' ng-click='$.toolbar.click("bgcolor")'/>
+            <img src='./images/line.png'/>
+            <img class='icon-btn' src='./images/button_alignleft.png' title='左对齐' ng-click='$.toolbar.click("alignleft")'/>
+            <img class='icon-btn' src='./images/button_aligncenter.png' title='居中对齐' ng-click='$.toolbar.click("aligncenter")'/>
+            <img class='icon-btn' src='./images/button_alignright.png' title='右对齐' ng-click='$.toolbar.click("alignright")'/>
+            <img class='icon-btn' src='./images/button_borderon.png' title='加边框' ng-click='$.toolbar.click("borderon")'/>
+            <img class='icon-btn' src='./images/button_borderoff.png' title='取消边框' ng-click='$.toolbar.click("borderoff")'/>
+            <img src='./images/line.png'/>
+            <img class='icon-btn' src='./images/button_merge.png' title='合并单元格' ng-click='$.toolbar.click("merge")'/>
+            <img class='icon-btn' src='./images/button_unmerge.png' title='取消合并单元格' ng-click='$.toolbar.click("unmerge")'/>
+            <img class='icon-btn' src='./images/button_insertrow.png' title='上方插入一行' ng-click='$.toolbar.click("insertrow")'/>
+            <img class='icon-btn' src='./images/button_insertcol.png' title='左侧插入一列' ng-click='$.toolbar.click("insertcol")'/>
+            <img class='icon-btn' src='./images/button_deleterow.png' title='删除行' ng-click='$.toolbar.click("deleterow")'/>
+            <img class='icon-btn' src='./images/button_deletecol.png' title='删除列' ng-click='$.toolbar.click("deletcol")'/>
+            <img src='./images/line.png'/>
+            <img class='icon-btn' src='./images/percent.png' title='百分比' ng-click='$.toolbar.click("percent")'/>
+            <img class='icon-btn' src='./images/dot.png' title='保留两位小数' ng-click='$.toolbar.click("dot2")'/>
+            <img class='icon-btn' src='./images/int.png' title='保留整数' ng-click='$.toolbar.click("integer")'/>
+            <img src='./images/line.png'/>
             <img class="icon-btn" src="./images/chart.png" title="插入图表" data-toggle="modal" data-target="#modelChart" id="modelChartIcon" ng-click="$.moveFocus()">
             <img class="icon-btn" src="./images/button_about.png" title="about" data-toggle="modal" data-target="#modelAbout">
         </div>
@@ -57,6 +89,38 @@
                 <label for="formula"><img src="./images/fx.png"></label>
                 <input type="text" id="formula" placeholder="=A1+A2">
             </form>
+        </div>
+    </div>
+    <div class="modal fade" id="modelLoadFromServer" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span class="modal-title">打开云端文件</span>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-striped">
+                        <tr>
+                            <td>#</td>
+                            <td>File</td>
+                            <td>Owner</td>
+                            <td>UpdateTime</td>
+                            <td>Edit</td>
+                        </tr>
+                        <tr ng-repeat="item in $.loadFileModel.list">
+                            <td>{{$index+1}}</td>
+                            <td><a ng-href='{{"/index.html?fileName=" + item.fileName + "&owner=" + item.owner}}'>{{item.fileName}}</a></td>
+                            <td>{{item.owner}}</td>
+                            <td>{{item.updateTime | date: "yyyy-MM-dd HH:mm:ss.sss"}}</td>
+                            <td><button type="button" class="btn btn-danger" ng-click="$.loadFileModel.remove(item.fileName, item.owner)">X</button></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" ng-click="$.loadFileModel.refresh()">刷新列表</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
         </div>
     </div>
     <div class="modal fade" id="modelSaveToServer" tabindex="-1">
@@ -376,6 +440,59 @@ angular.module('mainApp', ["highcharts-ng"])
         }
     };
 
+    let toolbar = function () {
+        let selected = {
+            fontcolor: "#FF0000",
+            bgcolor: "#FFFF00",
+        }
+        $("#inputfontcolor").cxColor({color:selected.fontcolor}).bind('change', function () {
+            selected.fontcolor = this.value;
+            workbook.executeCommand("set %C color " + selected.fontcolor);
+        });
+        $("#inputbgcolor").cxColor({color:selected.bgcolor}).bind('change', function () {
+            selected.bgcolor = this.value;
+            workbook.executeCommand("set %C color " + selected.bgcolor);
+        });
+
+        function click(cmd) {
+            switch(cmd) {
+                case "undo": workbook.executeCommand("undo"); break;
+                case "redo": workbook.executeCommand("redo"); break;
+                case "copy": workbook.executeCommand("copy %C all"); break;
+                case "cut": workbook.executeCommand("cut %C all"); break;
+                case "paste": workbook.executeCommand("paste %C all"); break;
+                case "delete": workbook.executeCommand("erase %C formulas"); break;
+                case "pasteformats": workbook.executeCommand("paste %C formats"); break;
+                case "filldown": workbook.executeCommand("filldown %C all"); break;
+                case "fillright": workbook.executeCommand("fillright %C all"); break;
+                case "font": workbook.executeCommand("set %C font * * *"); break;
+                case "bold": workbook.executeCommand("set %C font normal bold * *"); break;
+                case "italic": workbook.executeCommand("set %C font italic normal * *"); break;
+                case "italicbold": workbook.executeCommand("set %C font italic bold * *"); break;
+                case "color": workbook.executeCommand("set %C color " + selected.fontcolor); break;
+                case "bgcolor": workbook.executeCommand("set %C color " + selected.bgcolor); break;
+                case "alignleft": workbook.executeCommand("set %C cellformat left"); break;
+                case "aligncenter": workbook.executeCommand("set %C cellformat center"); break;
+                case "alignright": workbook.executeCommand("set %C cellformat right"); break;
+                case "borderon": workbook.executeCommand("set %C bt %S%Nset %C br %S%Nset %C bb %S%Nset %C bl %S", "1px solid rgb(0,0,0)"); break;
+                case "borderoff": workbook.executeCommand("set %C bt %S%Nset %C br %S%Nset %C bb %S%Nset %C bl %S"); break;
+                case "merge": workbook.executeCommand("merge %C"); break;
+                case "unmerge": workbook.executeCommand("unmerge %C"); break;
+                case "insertrow": workbook.executeCommand("insertrow %C"); break;
+                case "insertcol": workbook.executeCommand("insertcol %C"); break;
+                case "deleterow": workbook.executeCommand("deleterow %C"); break;
+                case "deletecol": workbook.executeCommand("deletecol %C"); break;
+                case "percent": workbook.executeCommand("set %C nontextvalueformat #,##0.00%"); break;
+                case "dot2": workbook.executeCommand("set %C nontextvalueformat #,##0.00"); break;
+                case "interger": workbook.executeCommand("set %C nontextvalueformat #,##0"); break;
+            }
+        }
+
+        return {
+            click: click,
+        }
+    }();
+
     let sheetTab = function () {
         let tabList = [];
         let selected = {
@@ -434,6 +551,69 @@ angular.module('mainApp', ["highcharts-ng"])
             select: select,
             remove: remove,
             isSelected: isSelected,
+        }
+    }();
+
+    let loadFileModel = function() {
+        let list = [];
+        let selected = {
+            sheetInfo: {},
+            pos: -1,
+            range: "",
+            ref:"",
+            source: "",
+        }
+
+        function initList () {
+            let url = "/api/file/list";
+            $http({method: 'GET', url: url,})
+            .then(function (response) {
+                if (response.data.code != 0) {
+                    console.log(response);
+                    alert(response.data.message);
+                    return;
+                }
+                list.splice(0, list.length);
+                Object.assign(list, response.data.result);
+            }, function (response) {
+                console.log("error: " + response);
+            });
+        }
+
+        function select (index) {
+            selected = list[index];
+        }
+
+        function refresh () {
+            initList();
+        }
+
+        function remove (fileName, owner) {
+            if (!confirm("确定删除文件'" + fileName + "' ?")) {
+                return;
+            }
+            let url = "/api/file?fileName=" + fileName + "&owner=" + owner;
+            $http({method: 'DELETE', url: url,})
+            .then(function (response) {
+                if (response.data.code != 0) {
+                    console.log(response);
+                    alert(response.data.message);
+                    return;
+                }
+                initList();
+            }, function (response) {
+                console.log("error: " + response);
+            });
+        }
+
+        return {
+            list: list,
+            selected: selected,
+            initList: initList,
+            select: select,
+            open: open,
+            refresh: refresh,
+            remove: remove,
         }
     }();
 
@@ -790,19 +970,11 @@ angular.module('mainApp', ["highcharts-ng"])
             });
         }
 
-        function initFromUrlParam () {
-            let fileName = getValueFromQuery("fileName");
-            let owner = getValueFromQuery("owner");
-            let mail = getValueFromQuery("mail");
-            let today = getValueFromQuery("today");
-            if (!fileName || !owner) {
-                sheetTab.add();
-                return;
-            }
+        function openRemoteFile (fileName, owner, today, mail) {
             let url = "/api/file?fileName=" + fileName + "&owner=" + owner;
             $http({method: 'GET', url: url})
             .then(function (response) {
-                 if (response.data.code != 0) {
+                if (response.data.code != 0) {
                     console.log(response);
                     alert(response.data.message);
                     return;
@@ -823,22 +995,35 @@ angular.module('mainApp', ["highcharts-ng"])
                 }
                 let content = data.result.content;
                 $q.when(loadFileData(content, today))
-                .then(function () {
-                    if (mail) {
-                        window.setTimeout(function () {
-                            mailModel.send();
-                        }, 1000); // give 1 second for recalc the formula data
-                    }
-                });
+                    .then(function () {
+                        if (mail) {
+                            window.setTimeout(function () {
+                                mailModel.send();
+                            }, 5000); // give 5 second for recalc the formula data
+                        }
+                    });
             }, function (response) {
                 console.log("error: " + response);
             });
+        }
+
+        function initFromUrlParam () {
+            let fileName = getValueFromQuery("fileName");
+            let owner = getValueFromQuery("owner");
+            let mail = getValueFromQuery("mail");
+            let today = getValueFromQuery("today");
+            if (!fileName || !owner) {
+                sheetTab.add();
+                return;
+            }
+            openRemoteFile(fileName, owner, today);
         }
 
         return {
             loadRemoteData: loadRemoteData,
             loadFileData: loadFileData,
             initFromUrlParam: initFromUrlParam,
+            openRemoteFile: openRemoteFile,
         }
     }();
 
@@ -859,11 +1044,13 @@ angular.module('mainApp', ["highcharts-ng"])
     $scope.$ = (function () {
         return {
             config: config,
+            toolbar: toolbar,
             sheetInfoList: workbook.sheetInfoList,
             getCurrentSheetInfo: getCurrentSheetInfo,
             getCurrentSheet: getCurrentSheet,
             mailModel: mailModel,
             sheetTab: sheetTab,
+            loadFileModel: loadFileModel,
             saveModel: saveModel,
             dataSourceModel: dataSourceModel,
             downloadModel: downloadModel,
@@ -881,19 +1068,8 @@ angular.module('mainApp', ["highcharts-ng"])
     workbook.setRenderSheetChart(chartModel.renderSheetChart);
     dataModel.initFromUrlParam();
     dataSourceModel.initList();
+    loadFileModel.initList();
 });
-
-$(document).ready(function () {
-    $(".icon-btn").click(function () {
-        let command = $(this).attr("command");
-        let arg = $(this).attr("arg");
-        if (command) {
-            workbook.executeCommand(command, arg);
-        }
-    });
-
-});
-
 </script>
 </body>
 </html>
