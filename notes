@@ -27,8 +27,7 @@ socialcalc是一个强大电子表格系统, 其核心是公式计算, 数据渲
 ### socialcalc-3.js
 
 这个表单(sheet)的核心文件, 用于组织单元格数据, 数据文件保存和解析, 实时渲染数据; 
-甚至包含必要的html元素, 如表单所在的html元素节点, 还有自定义的滚动条, 以及键盘, 鼠标, 窗口大小改变等等各类事件处理.
-
+包含必要的html元素, 如表单所在的html元素节点.
 该文件包含两个重要的模块Sheet和RenderContext, 分别负责数据管理和视图渲染.
 
 #### Sheet
@@ -100,3 +99,23 @@ socialcalc是一个强大电子表格系统, 其核心是公式计算, 数据渲
   15. defaultlinkstyle: 链接样式.
   16. defaultHTMLLinkstyle: 没有使用到.
   17. classnames:{}
+
+### socialcalctableeditor.js
+
+这个是用于与表单交互的模块. 如果自己做一个电子表格, 这个文件基本上不用改动就可以使用.
+这个文件包含必要的html元素, 还有自定义的滚动条, 以及键盘, 鼠标, 窗口大小改变等等各类事件处理.
+
+当用户修改表单的时候, 首先感受到的就是editor; editor会将事件通过命令的方式传递给context和sheet. 
+sheet执行完之后, editor也可以感知, 进而可以进行我们自己的逻辑处理(通过sheet.statuscallback完成).
+
+从容器的角度来讲, tableEditor包含renderContext, renderContext包含sheet.
+
+### 其他文件.
+
+其他文件包含xxxcontrols.js和xxx.pl. 分别是ui文件和后端处理的perl文件.
+对于我们来说, js中的ui框架日新月异, 原项目的html拼接的方式显然已经落伍很多, 因此我们就抛弃掉了.
+pl是作为电子表格的处理服务器代码, 我们改用其他的更现代化的语言去写了, 因此perl代码也被我们抛弃了.
+
+以上.
+
+如有疑问请联系95813422(AT)qq.com
