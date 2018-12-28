@@ -71,3 +71,32 @@ socialcalc是一个强大电子表格系统, 其核心是公式计算, 数据渲
   16. comment, 注释.
   17. mod, 是否允许修改(Y表示可以).
   18. cellProperties, 表格属性, 用于单位计算, 比如像素值.
+
+* 包含方法
+  1. 初始化(new).
+  2. 添加cell.
+  3. 解析文件/保存文件.
+  4. 调度命令.
+  5. 撤销/重做.
+  6. 重新计算.
+
+#### RenderConext
+
+这个模块负责渲染与html相关, 可以渲染表格, 并且返回<table>元素.
+  1. sheetobj, 管理的sheet
+  2. showgrid, 是否显示网格.
+  3. showRcHeader, 是否显示行列的标题
+  4. rownamewidth, 默认的行宽. 正常情况下, 如果包含字数较多, 很自动变化(比如滚动条到第10000行, 包含4个数字).
+  5. pixelPerRow, 默认行高.
+  6. cellskip:{} 在里面的cell不进行渲染.
+  7. coorToCr:{"A1":{row:5, col:5}} pane开始的cell
+  8. colwid:[], 列宽.
+  9: totalwidth, 总列宽.
+  10. rowpanes:[], pane的起始行和末尾行.
+  11. colpans:[], pan的起始列和末尾列.
+  12. highlights:[], 高亮的cell集合.
+  13. cursorsuffix.
+  14. cellIdPrefix, 每个cell对应的id前缀.
+  15. defaultlinkstyle: 链接样式.
+  16. defaultHTMLLinkstyle: 没有使用到.
+  17. classnames:{}
