@@ -202,6 +202,7 @@ SocialCalc.Constants = {
    s_statusline_incell: " in cell ",
    s_statusline_calcstart: "Calculation start...",
    s_statusline_sum: "SUM",
+   s_statusline_avg: "AVG",
    s_statusline_recalcneeded: '<span style="color:#999;">(Recalc needed)</span>',
    s_statusline_circref: '<span style="color:red;">Circular reference: ',
 

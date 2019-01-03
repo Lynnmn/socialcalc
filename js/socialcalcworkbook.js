@@ -9,14 +9,41 @@ if (!SocialCalc.TableEditor) {
 
 SocialCalc.Workbook = function(parentId, formulaId) {
     this.sheetInfoList = []; // {name, sheet, context, editor, node, chartConfig:[]}
-    this.currentSheetIndex = 0;
+    this.currentSheetIndex = -1;
     this.editor = null;
     this.parentId = parentId;
     this.formulaId = formulaId;
-    renderSheetChart = null;
+    var renderSheetChart = null;
+    var onSheetCalcFinished = null;
+    var onStatusChangeCallback = null;
+    var that = this;
+
+    var sheetStatusCallback = function (self, status, arg, params) {
+        switch (status) {
+            case "calcfinished" :
+                if (onSheetCalcFinished) {
+                    onSheetCalcFinished(self, status, arg, params);
+                }
+                break;
+            case "renderdone" :
+                if (renderSheetChart && that.currentSheetIndex != -1
+                    && that.sheetInfoList[that.currentSheetIndex].sheet === params.sheet) {
+                    renderSheetChart(params.sheet);
+                }
+                break;
+        }
+        if (onStatusChangeCallback) {
+            let statusText = SocialCalc.EditorGetStatuslineString(that.editor, status, arg, params);
+            onStatusChangeCallback(statusText);
+        }
+    }
 
     this.setRenderSheetChart = function (f) {
         renderSheetChart = f;
+    }
+
+    this.setStatusCallback = function (f) {
+        onStatusChangeCallback = f;
     }
 
     this.generateSheetName = function () {
@@ -54,7 +81,7 @@ SocialCalc.Workbook = function(parentId, formulaId) {
         return -1;
     }
 
-    function caclEditorSize () {
+    function calcEditorSize () {
         return {
             width: document.body.clientWidth - 10,
             height: document.body.clientHeight - $("#first-part-actions").height() - $("#nav-tabs").height() - 10
@@ -83,6 +110,7 @@ SocialCalc.Workbook = function(parentId, formulaId) {
         if (str) {
             sheet.ParseSheetSave(str);
         }
+        sheet.statuscallback = sheetStatusCallback;
         var context = new SocialCalc.RenderContext(sheet);
         context.showGrid = true;
         context.showRCHeaders = true;
@@ -125,12 +153,12 @@ SocialCalc.Workbook = function(parentId, formulaId) {
         delete(SocialCalc.Formula.SheetCache.sheets[name]);
         this.sheetInfoList.splice(i, 1);
         if (i == this.currentSheetIndex) {
+            this.currentSheetIndex = -1;
             if (this.sheetInfoList.length > 0) {
                 this.selectSheet(this.sheetInfoList[0].name);
             }
         }
     }
-
 
     this.selectSheet = function (name) {
         var i = this.getIndexBySheetName(name);
@@ -143,7 +171,7 @@ SocialCalc.Workbook = function(parentId, formulaId) {
             return;
         }
         let editor = new SocialCalc.TableEditor(sheetInfo.context);
-        let size = caclEditorSize();
+        let size = calcEditorSize();
         var node = editor.CreateTableEditor(size.width, size.height);
         var inputbox = new SocialCalc.InputBox(document.getElementById(this.formulaId), editor);
         var parentNode = document.getElementById(this.parentId);
@@ -151,15 +179,15 @@ SocialCalc.Workbook = function(parentId, formulaId) {
             parentNode.removeChild(child);
         }
         parentNode.appendChild(node);
+        if (this.currentSheetIndex != i && this.currentSheetIndex != -1) {
+            this.sheetInfoList[this.currentSheetIndex].sheet.statuscallback = sheetStatusCallback;
+            delete this.editor;
+        }
         this.currentSheetIndex = i;
         this.editor = editor;
         editor.StatusCallback["chart"] = {
             params: sheetInfo,
-            func: function (editor, status, arg, param) {
-                if (status == "renderdone" && renderSheetChart) {
-                    renderSheetChart(param.sheet);
-                }
-            }
+            func: sheetStatusCallback,
         };
         editor.EditorScheduleSheetCommands("redisplay", true, false);
     }
@@ -241,7 +269,7 @@ SocialCalc.Workbook = function(parentId, formulaId) {
     }
 
     this.resize = function () {
-        const size = caclEditorSize();
+        const size = calcEditorSize();
         if (this.editor) {
             this.editor.ResizeTableEditor(size.width, size.height);
         }
@@ -270,9 +298,17 @@ SocialCalc.Workbook = function(parentId, formulaId) {
     }
 
     this.recalcAllSheet = function () {
-        for (let i = 0; i < this.sheetInfoList.length; ++i) {
-            let info = this.sheetInfoList[i];
-            info.sheet.RecalcSheet();
+        let i = 0;
+        let sheetInfoList = this.sheetInfoList;
+        onSheetCalcFinished = function () {
+            if (i < sheetInfoList.length) {
+                let info = sheetInfoList[i];
+                info.sheet.RecalcSheet();
+                ++i;
+            } else {
+                onSheetCalcFinished = null;
+            }
         }
+        onSheetCalcFinished();
     }
 }

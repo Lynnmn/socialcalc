@@ -399,10 +399,12 @@
                         <img class="" src="./images/x.png">
                     </span>
                 </a>
-
             </li>
             <li class="add-sheet" ng-click="$.sheetTab.add()">
                 <img src="./images/add-sheet.png" >
+            </li>
+            <li>
+                <span class="label label-info">{{$.statusBar.info.text}}</span>
             </li>
         </ul>
     </div>
@@ -424,7 +426,7 @@ angular.module('mainApp', ["highcharts-ng"])
 .config(['$compileProvider', function($compileProvider) {
     $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|tel|file|sms|data):/);
 }])
-.controller('mainController', function($scope, $http, $window, $q) {
+.controller('mainController', function($scope, $http, $window, $q, $timeout) {
     let config = {
         fileName: "",
         owner: "",
@@ -509,7 +511,6 @@ angular.module('mainApp', ["highcharts-ng"])
             if (!sheetName) {
                 let sheetInfo = workbook.addNewSheet();
                 sheetName = sheetInfo.name;
-                workbook.selectSheet(sheetName);
             }
             tabList.push(sheetName);
             workbook.selectSheet(sheetName);
@@ -535,7 +536,6 @@ angular.module('mainApp', ["highcharts-ng"])
             }
             workbook.removeSheet(name);
             tabList.splice(index, 1);
-            list.push(response.data.result);
             if (tabList.length == 0) {
                 selected.index = -1;
             } else if (selected.index >= tabList.length) {
@@ -900,10 +900,12 @@ angular.module('mainApp', ["highcharts-ng"])
             dragInfo.left = parseInt(document.defaultView.getComputedStyle(dragInfo.target,false)["left"]);
             dragInfo.top = parseInt(document.defaultView.getComputedStyle(dragInfo.target,false)["top"]);
             dragInfo.flag = true;
+            // document.onmousemove = mousemove;
         }
 
         function mousemove (event, index) {
             if (dragInfo.flag) {
+                // console.log(event.clientX + "," + event.clientY);
                 dragInfo.target.style.left = dragInfo.left + event.clientX - dragInfo.startX + "px";
                 dragInfo.target.style.top = dragInfo.top + event.clientY - dragInfo.startY + "px";
             }
@@ -1041,6 +1043,26 @@ angular.module('mainApp', ["highcharts-ng"])
         obj.focus();
     }
 
+    let statusBar = function () {
+        let info = {
+            text: "",
+        }
+
+        function updateStatus (text) {
+            if (info.text != text) {
+                info.text = text;
+                $timeout(function() {
+                    $scope.$apply();
+                }, 0, false);
+            }
+        }
+
+        return {
+            updateStatus: updateStatus,
+            info: info,
+        }
+    }();
+
     $scope.$ = (function () {
         return {
             config: config,
@@ -1058,6 +1080,7 @@ angular.module('mainApp', ["highcharts-ng"])
             dataModel:dataModel,
             moveFocus: moveFocus,
             chartModel: chartModel,
+            statusBar: statusBar,
         }
     })();
 
@@ -1066,6 +1089,7 @@ angular.module('mainApp', ["highcharts-ng"])
     });
 
     workbook.setRenderSheetChart(chartModel.renderSheetChart);
+    workbook.setStatusCallback(statusBar.updateStatus);
     dataModel.initFromUrlParam();
     dataSourceModel.initList();
     loadFileModel.initList();

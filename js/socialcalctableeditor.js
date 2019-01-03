@@ -1025,33 +1025,40 @@ SocialCalc.EditorGetStatuslineString = function(editor, status, arg, params) {
    if (!params.calculating && !params.command && !progress && editor.range.hasrange 
        && (editor.range.left!=editor.range.right || editor.range.top!=editor.range.bottom)) {
       sum = 0;
+      count = 0;
       for (r=editor.range.top; r <= editor.range.bottom; r++) {
          for (c=editor.range.left; c <= editor.range.right; c++) {
             cell = editor.context.sheetobj.cells[SocialCalc.crToCoord(c, r)];
             if (!cell) continue;
             if (cell.valuetype && cell.valuetype.charAt(0)=="n") {
                sum += cell.datavalue-0;
+               count += 1;
                }
             }
          }
 
-      sum = SocialCalc.FormatNumber.formatNumberWithFormat(sum, "[,]General", "");
+      var sumStr = SocialCalc.FormatNumber.formatNumberWithFormat(sum, "[,]General", "");
 
       coord = SocialCalc.crToCoord(editor.range.left, editor.range.top) + ":" +
          SocialCalc.crToCoord(editor.range.right, editor.range.bottom);
-      progress = coord + " (" + (editor.range.right-editor.range.left+1) + "x" + (editor.range.bottom-editor.range.top+1) +
-                 ") "+scc.s_statusline_sum+"=" + sum + " " + progress;
+      var rangeStatus = coord + " (" + (editor.range.right-editor.range.left+1) + "x" + (editor.range.bottom-editor.range.top+1) +
+                 ") "+scc.s_statusline_sum+"=" + sumStr;
+      if (count > 0) {
+         var average = SocialCalc.FormatNumber.formatNumberWithFormat(sum / count, "[,]General", "");
+         progress += " " + scc.s_statusline_avg + "=" + average;
+         }
+      progress = rangeStatus + " " + progress;
       }
-   sstr = editor.ecell.coord+" &nbsp; "+progress;
+   sstr = editor.ecell.coord+" "+progress;
 
    if (!params.calculating && editor.context.sheetobj.attribs.needsrecalc=="yes") {
-      sstr += ' &nbsp; '+scc.s_statusline_recalcneeded;
+      sstr += ' '+scc.s_statusline_recalcneeded;
       }
 
    circ = editor.context.sheetobj.attribs.circularreferencecell;
    if (circ) {
       circ = circ.replace(/\|/, " referenced by ");
-      sstr += ' &nbsp; '+scc.s_statusline_circref + circ + '</span>';
+      sstr += ' '+scc.s_statusline_circref + circ + '</span>';
       }
 
    return sstr;
