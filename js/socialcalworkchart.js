@@ -204,7 +204,8 @@ function renderChartX(sheet, config) {
     let startCol = config.hasXsis ? left + 1 : left;
     let startRow = config.hasLegend ? top + 1 : top;
     var xAxis = {
-        categories: []
+        categories: [],
+        reversed: config.reversed,
     };
     for (let row = startRow; row<=bottom; row++) {
         if (config.hasXsis) {
